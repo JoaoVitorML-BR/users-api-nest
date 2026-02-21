@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { User } from "./user.entity";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
+import { IsNull, Not, Repository, UpdateResult } from "typeorm";
 
 import { ROLE } from "./user.entity";
 
@@ -49,7 +49,14 @@ export class UserService {
         return this.userEntity.findOne({ where: [{ username: login }, { email: login }] });
     }
 
-    async updateRefreshToken(userId: string, refreshToken: string) {
-        await this.userEntity.update(userId, { refreshToken });
+    async updateRefreshToken(userId: string, refreshToken: string | null) {
+        return await this.userEntity.update(userId, { refreshToken });
+    }
+
+    async clearRefreshTokenIfPresent(userId: string): Promise<UpdateResult> {
+        return this.userEntity.update(
+            { id: userId, refreshToken: Not(IsNull()) },
+            { refreshToken: null }
+        );
     }
 };
