@@ -9,6 +9,7 @@ import { ResponseAuthLoginDTO } from "../dto/response-auth-login.dto";
 import { AuthService } from "../auth.service";
 import { RefreshTokenDto } from "../dto/refresh-token.dto";
 import { JwtService } from "@nestjs/jwt";
+import { LogoutResponseDTO } from "../dto/logout.dto";
 
 @Injectable()
 export class AuthSignInUseCase {
@@ -98,5 +99,22 @@ export class AuthSignInUseCase {
         } catch (error) {
             throw new UnauthorizedException('Invalid or expired refresh token');
         }
+    }
+
+    async logout(user: any): Promise<ApiResponseDto<LogoutResponseDTO>> {
+        const userId = user?.sub ?? user?.id;
+
+        if (!userId) {
+            throw new UnauthorizedException('User not found or inactive');
+        }
+
+        await this.userService.clearRefreshTokenIfPresent(userId);
+        
+        return {
+            statusCode: 200,
+            status: true,
+            code: "SUCCESS",
+            message: "Logout successful",
+        };
     }
 }
