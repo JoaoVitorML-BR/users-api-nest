@@ -13,18 +13,19 @@ export class ResponseInterceptor<T> implements NestInterceptor<T, any> {
     intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
         return next.handle().pipe(
             map((data) => {
-                console.log('ResponseInterceptor data:', data);
                 if (
                     data &&
                     typeof data === 'object' &&
                     'statusCode' in data &&
                     'status' in data &&
                     'code' in data &&
-                    'message' in data &&
-                    'data' in data
+                    'message' in data
                 ) {
                     const response = context.switchToHttp().getResponse();
-                    response.status(data.statusCode);
+                    response.status((data as { statusCode: number }).statusCode);
+                    if (!('data' in data)) {
+                        return { ...data, data: null };
+                    }
                     return data;
                 }
 
