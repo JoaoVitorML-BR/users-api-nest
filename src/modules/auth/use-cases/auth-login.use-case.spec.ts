@@ -19,6 +19,7 @@ describe('AuthSignInUseCase', () => {
         findByUsernameOrEmail: jest.fn(),
         updateRefreshToken: jest.fn(),
         findById: jest.fn(),
+        clearRefreshTokenIfPresent: jest.fn(),
     };
 
     const mockAuthService = {
@@ -199,6 +200,23 @@ describe('AuthSignInUseCase', () => {
             await expect(useCase.refreshToken(refreshDto)).rejects.toThrow(UnauthorizedException);
             await expect(useCase.refreshToken(refreshDto)).rejects.toThrow('Invalid or expired refresh token');
             expect(mockJwtService.verifyAsync).toHaveBeenCalledWith('invalid.refresh.token');
+        });
+    });
+
+    describe('logout', () => {
+        it('should clear refresh token on logout', async () => {
+            mockUserService.clearRefreshTokenIfPresent.mockResolvedValue({ affected: 1 });
+
+            const result = await useCase.logout({ id: '123' });
+
+            expect(mockUserService.clearRefreshTokenIfPresent).toHaveBeenCalledWith('123');
+            expect(result).toEqual({
+                statusCode: 200,
+                status: true,
+                code: "SUCCESS",
+                message: "Logout successful",
+                data: null
+            });
         });
     });
 });
