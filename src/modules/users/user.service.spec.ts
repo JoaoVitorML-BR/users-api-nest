@@ -14,6 +14,7 @@ describe('UserService', () => {
     count: jest.fn(),
     create: jest.fn(),
     save: jest.fn(),
+    update: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -211,6 +212,20 @@ describe('UserService', () => {
       const result = await service.checkUserExistsByEmailAndUsername('john@test.com', 'john123');
 
       expect(result).toBe(false);
+    });
+  });
+
+  describe('clearRefreshTokenIfPresent', () => {
+    it('should clear refresh token if present', async () => {
+      mockRepository.update.mockResolvedValue({ affected: 1 });
+
+      const result = await service.clearRefreshTokenIfPresent('123');
+
+      expect(mockRepository.update).toHaveBeenCalledWith(
+        expect.objectContaining({ id: '123' }),
+        { refreshToken: null }
+      );
+      expect(result).toEqual({ affected: 1 });
     });
   });
 });
