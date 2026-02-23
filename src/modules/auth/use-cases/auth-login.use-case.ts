@@ -109,12 +109,13 @@ export class AuthSignInUseCase {
         }
 
         await this.userService.clearRefreshTokenIfPresent(userId);
-        
+
         return {
             statusCode: 200,
             status: true,
             code: "SUCCESS",
             message: "Logout successful",
+            data: null,
         };
     }
 }
