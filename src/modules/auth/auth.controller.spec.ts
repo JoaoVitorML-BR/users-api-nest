@@ -29,6 +29,7 @@ describe('AuthController', () => {
     const mockAuthUseCase = {
         signIn: jest.fn(),
         refreshToken: jest.fn(),
+        logout: jest.fn(),
     }
 
     beforeEach(async () => {
@@ -91,6 +92,35 @@ describe('AuthController', () => {
             expect(result).toEqual(mockRefreshResponse);
             expect(result.data).toHaveProperty('accessToken');
             expect(result.data).toHaveProperty('refreshToken');
+        });
+    });
+
+    describe('logout', () => {
+        it('should return success message on logout', async () => {
+            const mockReq = {
+                user: {
+                    id: '123',
+                    username: 'testuser',
+                    email: 'testuser@example.com',
+                    name: 'Test User',
+                    role: 'USER',
+                }
+            }
+
+            const mockLogoutResponse = {
+                statusCode: 200,
+                status: true,
+                code: 'SUCCESS',
+                message: 'Logout successful',
+                data: null,
+            };
+
+            mockAuthUseCase.logout.mockResolvedValue(mockLogoutResponse);
+
+            const result = await controller.logout(mockReq);
+
+            expect(mockAuthUseCase.logout).toHaveBeenCalledWith(mockReq.user);
+            expect(result).toEqual(mockLogoutResponse);
         });
     });
 });
