@@ -1,5 +1,4 @@
 import { Body, Controller, Patch, Post } from "@nestjs/common";
-import { SendTokenUseCase } from "./use-cases/send-token.use-case";
 import { InjectQueue } from "@nestjs/bull";
 import type { Queue } from 'bull';
 import { SendEmailDto } from "./dto/send-email.dto";
@@ -10,7 +9,6 @@ export class EmailConfirmationTokenController {
     constructor(
         @InjectQueue('email') private readonly emailQueue: Queue,
         private readonly activateAccountUseCase: ActivateAccountUseCase,
-        private readonly sendTokenUseCase: SendTokenUseCase
     ) { }
 
     @Patch('activate-account')
