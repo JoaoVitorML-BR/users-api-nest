@@ -5,11 +5,15 @@ import { DataSource } from "typeorm";
 export class AppController {
     constructor(private dataSource: DataSource) { }
 
-    @Get()
+    @Get('health')
     async checkHealth(): Promise<string> {
-        if (!this.dataSource.isInitialized) {
-            return 'API is not connected to database';
+        try {
+            if (!this.dataSource.isInitialized) {
+                return 'API is not connected to database';
+            }
+            return 'API is healthy';
+        } catch (error) {
+            return 'API health check failed';
         }
-        return 'API is healthy';
     }
 }
