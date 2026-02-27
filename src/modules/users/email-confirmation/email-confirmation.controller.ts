@@ -34,6 +34,3 @@ export class EmailConfirmationTokenController {
         return { message: 'E-mail será enviado em background.' };
     }
 }
-
-// fiz o cadastro > gero o token > salvo o token no banco se o email nãoe xistir ainda > envio o email com o token > o usuário clica no link do email > pego o token do link > valido o token > se for válido, ativo a conta do usuário e deleto o token do banco
-// para isso no controller > recebo o token > chamo o use case > no use case chamo o service para validar o token > se for válido, ativo a conta do usuário e deleto o token do banco
