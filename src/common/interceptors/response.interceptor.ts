@@ -13,25 +13,12 @@ export class ResponseInterceptor<T> implements NestInterceptor<T, any> {
     intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
         return next.handle().pipe(
             map((data) => {
-                if (
-                    data &&
-                    typeof data === 'object' &&
-                    'statusCode' in data &&
-                    'status' in data &&
-                    'code' in data &&
-                    'message' in data
-                ) {
-                    const response = context.switchToHttp().getResponse();
-                    response.status((data as { statusCode: number }).statusCode);
-                    if (!('data' in data)) {
-                        return { ...data, data: null };
-                    }
-                    return data;
-                }
+                let statusCode = context.switchToHttp().getResponse().statusCode;
+                let message = 'Request successful';
+                let code = 'SUCCESS';
+                let status = true;
+                let responseData;
 
-                const statusCode = context.switchToHttp().getResponse().statusCode;
-
-                // Mapping status codes to descriptive codes
                 const codeMap = {
                     [HttpStatus.OK]: 'SUCCESS',
                     [HttpStatus.CREATED]: 'CREATED',
@@ -39,16 +26,38 @@ export class ResponseInterceptor<T> implements NestInterceptor<T, any> {
                     [HttpStatus.NO_CONTENT]: 'NO_CONTENT',
                 };
 
-                const code = codeMap[statusCode] || 'SUCCESS';
+                if (data && typeof data === 'object') {
+                    if ('statusCode' in data && typeof data.statusCode === 'number') {
+                        statusCode = data.statusCode;
+                    }
+                    if ('message' in data && typeof data.message === 'string') {
+                        message = data.message;
+                    }
+                    if ('code' in data && typeof data.code === 'string') {
+                        code = data.code;
+                    } else {
+                        code = codeMap[statusCode] || 'SUCCESS';
+                    }
+                    if ('status' in data && typeof data.status === 'boolean') {
+                        status = data.status;
+                    }
+                    // does not have data property but has other properties, consider them as data
+                    responseData = data.data ? data.data : (() => {
+                        const { statusCode: _sc, message: _m, code: _c, status: _s, ...usefulData } = data;
+                        return Object.keys(usefulData).length > 0 ? usefulData : null;
+                    })();
+                } else {
+                    responseData = data;
+                }
 
                 return {
                     statusCode,
-                    status: true,
+                    status,
                     code,
-                    message: 'Request successful',
-                    data,
+                    message,
+                    data: responseData,
                 };
-            }),
+            })
         );
     }
 }
