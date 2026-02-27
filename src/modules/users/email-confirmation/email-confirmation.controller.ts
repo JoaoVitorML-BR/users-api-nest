@@ -19,12 +19,6 @@ export class EmailConfirmationTokenController {
         return emailConfirmation;
     }
 
-    @Post('teste-send-email')
-    async testeSendEmail() {
-        const sendToken = await this.sendTokenUseCase.execute({ email: "jvmlira33@gmail.com" });
-        return sendToken;
-    }
-
     @Post('send-email')
     async sendEmail(@Body() dto: SendEmailDto) {
         await this.emailQueue.add({
