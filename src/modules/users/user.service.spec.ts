@@ -148,14 +148,14 @@ describe('UserService', () => {
         password: 'password123',
         role: ROLE.USER,
       };
-      const mockUser = { id: '1', ...userData };
+      const mockUser = { id: '1', name: userData.name, username: userData.username, email: userData.email, role: userData.role };
 
       mockRepository.create.mockReturnValue(mockUser);
       mockRepository.save.mockResolvedValue(mockUser);
 
       const result = await service.create(userData);
 
-      expect(result).toEqual(mockUser);
+        expect(result).toEqual(mockUser);
       expect(mockRepository.create).toHaveBeenCalledWith(userData);
       expect(mockRepository.save).toHaveBeenCalledWith(mockUser);
     });
@@ -168,14 +168,14 @@ describe('UserService', () => {
         password: 'admin123',
         role: ROLE.ADMIN_MASTER,
       };
-      const mockUser = { id: '1', ...userData };
+      const mockUser = { id: '1', name: userData.name, username: userData.username, email: userData.email, role: userData.role };
 
       mockRepository.create.mockReturnValue(mockUser);
       mockRepository.save.mockResolvedValue(mockUser);
 
       const result = await service.create(userData);
 
-      expect(result).toEqual(mockUser);
+        expect(result).toEqual(mockUser);
       expect(mockRepository.create).toHaveBeenCalledWith(userData);
     });
   });
