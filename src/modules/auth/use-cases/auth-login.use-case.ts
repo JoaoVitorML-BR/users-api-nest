@@ -41,8 +41,10 @@ export class AuthSignInUseCase {
 
         const tokens = await this.authService.generateAccessToken(userWithoutPassword);
 
-        // Salvar refreshToken no banco
-        await this.userService.updateRefreshToken(userWithoutPassword.id, tokens.refreshToken);
+        const hashedRefreshToken = await bcrypt.hash(tokens.refreshToken, 10);
+
+        // Save only the hashed refresh token in the database
+        await this.userService.updateRefreshToken(userWithoutPassword.id, hashedRefreshToken);
 
         return {
             statusCode: 200,
@@ -73,8 +75,11 @@ export class AuthSignInUseCase {
                 throw new UnauthorizedException('User not found or inactive');
             }
 
-            // Valid if the refresh token matches the one stored in the database
-            if (user.refreshToken !== dto.refreshToken) {
+            const isValidRefreshToken =
+                !!user.refreshToken && (await bcrypt.compare(dto.refreshToken, user.refreshToken));
+
+            // Valid if the refresh token matches the hash stored in the database
+            if (!isValidRefreshToken) {
                 throw new UnauthorizedException('Invalid refresh token');
             }
 
@@ -82,8 +87,11 @@ export class AuthSignInUseCase {
 
             const tokens = await this.authService.generateAccessToken(userWithoutPassword);
 
+            // Hash refresh token before saving to the database for security
+            const hashedRefreshToken = await bcrypt.hash(tokens.refreshToken, 10);
+
             // Update the refresh token in the database
-            await this.userService.updateRefreshToken(user.id, tokens.refreshToken);
+            await this.userService.updateRefreshToken(user.id, hashedRefreshToken);
 
             return {
                 statusCode: 200,
