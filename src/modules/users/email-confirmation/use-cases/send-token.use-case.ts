@@ -18,7 +18,7 @@ export class SendTokenUseCase {
         try {
             const generatedToken = this.tokenGeneratorService.generate();
             if (!generatedToken) {
-                throw new Error('Failed to generate token.');
+                throw new BadRequestException('Failed to generate token.');
             }
 
             if (!email.email) {
@@ -27,12 +27,12 @@ export class SendTokenUseCase {
 
             const tokenSave = await this.emailConfirmationService.saveToken(email.email, generatedToken);
             if (!tokenSave) {
-                throw new Error('Failed to save token.');
+                throw new BadRequestException('Failed to save token.');
             }
 
             const sendEmailResult = await this.sendTokenFromEmailService.sendToken(email.email, generatedToken);
             if (!sendEmailResult) {
-                throw new Error('Failed to send email with the token.');
+                throw new BadRequestException('Failed to send email with the token.');
             }
 
             return { statusCode: 200, status: true, message: 'Token sent successfully!' };
