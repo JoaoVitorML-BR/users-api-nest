@@ -3,10 +3,12 @@ import { CreateUsersUseCase } from './create-users.use-case';
 import { UserService } from '../user.service';
 import { BadRequestException, ConflictException, InternalServerErrorException } from '@nestjs/common';
 import { ROLE } from '../user.entity';
+import { SendTokenUseCase } from '../email-confirmation/use-cases/send-token.use-case';
 
 describe('CreateUsersUseCase', () => {
   let useCase: CreateUsersUseCase;
   let userService: UserService;
+  let sendTokenUseCase: SendTokenUseCase;
 
   const mockUserService = {
     count: jest.fn(),
@@ -21,6 +23,10 @@ describe('CreateUsersUseCase', () => {
         {
           provide: UserService,
           useValue: mockUserService,
+        },
+        {
+          provide: SendTokenUseCase,
+          useValue: { execute: jest.fn() },
         },
       ],
     }).compile();
@@ -53,7 +59,7 @@ describe('CreateUsersUseCase', () => {
     });
 
     it('should create first user with ADMIN_MASTER role', async () => {
-      const mockCreatedUser = { id: '1', ...validUserData, role: ROLE.ADMIN_MASTER };
+      const mockCreatedUser = { id: '1', name: validUserData.name, username: validUserData.username, email: validUserData.email, role: ROLE.ADMIN_MASTER };
       mockUserService.count.mockResolvedValue(0);
       mockUserService.create.mockResolvedValue(mockCreatedUser);
 
@@ -67,12 +73,12 @@ describe('CreateUsersUseCase', () => {
         password: expect.any(String),
         role: ROLE.ADMIN_MASTER,
       });
-      expect(result).toEqual({
-        statusCode: 201,
-        status: true,
-        message: 'User created successfully',
-        data: mockCreatedUser,
-      });
+        expect(result).toEqual({
+          statusCode: 201,
+          status: true,
+          code: 'CREATED',
+          message: 'User created successfully',
+        });
     });
 
     it('should throw InternalServerErrorException if first user creation fails', async () => {
@@ -99,7 +105,7 @@ describe('CreateUsersUseCase', () => {
     });
 
     it('should create user with USER role when not first user', async () => {
-      const mockCreatedUser = { id: '2', ...validUserData, role: ROLE.USER };
+      const mockCreatedUser = { id: '2', name: validUserData.name, username: validUserData.username, email: validUserData.email, role: ROLE.USER };
       mockUserService.count.mockResolvedValue(1);
       mockUserService.checkUserExistsByEmailAndUsername.mockResolvedValue(false);
       mockUserService.create.mockResolvedValue(mockCreatedUser);
@@ -118,12 +124,12 @@ describe('CreateUsersUseCase', () => {
         password: expect.any(String),
         role: ROLE.USER,
       });
-      expect(result).toEqual({
-        statusCode: 201,
-        status: true,
-        message: 'User created successfully',
-        data: mockCreatedUser,
-      });
+        expect(result).toEqual({
+          statusCode: 201,
+          status: true,
+          code: 'CREATED',
+          message: 'User created successfully',
+        });
     });
 
     it('should throw InternalServerErrorException if regular user creation fails', async () => {
