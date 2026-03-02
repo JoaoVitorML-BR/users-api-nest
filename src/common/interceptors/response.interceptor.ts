@@ -41,15 +41,18 @@ export class ResponseInterceptor<T> implements NestInterceptor<T, any> {
                     if ('status' in data && typeof data.status === 'boolean') {
                         status = data.status;
                     }
-                    // does not have data property but has other properties, consider them as data
-                    responseData = data.data ? data.data : (() => {
+                    // If the object has data property, use it as the response data
+                    if ('data' in data) {
+                        responseData = data.data;
+                    } else {
+                        // else use the remaining properties as response data
                         const { statusCode: _sc, message: _m, code: _c, status: _s, ...usefulData } = data;
-                        return Object.keys(usefulData).length > 0 ? usefulData : null;
-                    })();
+                        responseData = Object.keys(usefulData).length > 0 ? usefulData : null;
+                    }
                 } else {
                     responseData = data;
                 }
-
+                
                 return {
                     statusCode,
                     status,
