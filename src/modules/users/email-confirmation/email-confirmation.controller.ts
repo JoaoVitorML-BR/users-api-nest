@@ -23,6 +23,11 @@ export class EmailConfirmationTokenController {
             email: dto.email,
             token: dto.token,
         });
-        return { message: 'E-mail será enviado em background.' };
+        return {
+            statusCode: 200,
+            status: true,
+            code: "SUCCESS",
+            message: "Email sent successfully",
+        };
     }
 }
