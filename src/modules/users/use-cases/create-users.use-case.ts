@@ -38,6 +38,7 @@ export class CreateUsersUseCase {
             return {
                 statusCode: 201,
                 status: true,
+                code: 'CREATED',
                 message: "User created successfully"
             };
         }
@@ -49,7 +50,6 @@ export class CreateUsersUseCase {
         }
 
         const res = await this.userService.create({ ...Data, password: hashedPassword, role: ROLE.USER });
-
         if (!res || !res.id) {
             throw new InternalServerErrorException('Failed to create user');
         }
@@ -59,6 +59,7 @@ export class CreateUsersUseCase {
         return {
             statusCode: 201,
             status: true,
+            code: 'CREATED',
             message: "User created successfully"
         };
     }
