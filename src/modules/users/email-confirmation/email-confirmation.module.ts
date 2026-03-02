@@ -9,6 +9,7 @@ import { SendTokenFromEmailService } from "src/common/services/send-email-token.
 import { BullModule } from "@nestjs/bull";
 import { User } from "../user.entity";
 import { ActivateAccountUseCase } from "./use-cases/activate-account.use-case";
+import { EmailConfirmationProcessor } from "./email.processor";
 
 @Module({
     imports: [
@@ -24,6 +25,7 @@ import { ActivateAccountUseCase } from "./use-cases/activate-account.use-case";
         TokenGeneratorService,
         SendTokenFromEmailService,
         ActivateAccountUseCase,
+        EmailConfirmationProcessor
     ],
     exports: [EmailConfirmationService, SendTokenUseCase],
 })
