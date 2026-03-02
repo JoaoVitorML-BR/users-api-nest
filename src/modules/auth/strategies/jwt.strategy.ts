@@ -10,10 +10,15 @@ import { AuthService } from "../auth.service";
 export class JwtStrategy extends PassportStrategy(Strategy) {
     // Configure the JWT strategy
     constructor(private readonly authService: AuthService) {
+        const jwtSecret = process.env.JWT_SECRET;
+        if (!jwtSecret) {
+            throw new Error('JWT_SECRET is not configured.');
+        }
+
         super({
             jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
             ignoreExpiration: false,
-            secretOrKey: process.env.JWT_SECRET || 'fallback_secret',
+            secretOrKey: jwtSecret,
         });
     }
 
