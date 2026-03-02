@@ -10,6 +10,10 @@ import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { EmailConfirmation } from './modules/users/email-confirmation/email-confirmation.entity';
 import { BullModule } from '@nestjs/bull';
 
+const isTestEnvironment = process.env.NODE_ENV === 'test';
+const shouldSynchronizeSchema =
+  process.env.NODE_ENV === 'development' && process.env.DB_SYNCHRONIZE === 'true';
+
 @Module({
   imports: [
     BullModule.forRoot({
@@ -19,7 +23,7 @@ import { BullModule } from '@nestjs/bull';
       },
     }),
     TypeOrmModule.forRoot(
-      process.env.NODE_ENV === 'test'
+      isTestEnvironment
         ? {
           type: 'sqlite',
           database: ':memory:',
@@ -35,7 +39,7 @@ import { BullModule } from '@nestjs/bull';
           password: process.env.DB_PASSWORD,
           database: process.env.DB_DATABASE,
           entities: [User, EmailConfirmation],
-          synchronize: true,
+          synchronize: shouldSynchronizeSchema,
           logging: true,
         },
     ),
