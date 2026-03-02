@@ -3,17 +3,17 @@ import { SendEmailConfirmationDto } from "../dto/send-email-confirmation.dto";
 import { BadRequestException, Injectable } from "@nestjs/common";
 import { ApiResponseDto } from "../../dto/api-response.dto";
 import { ResponseSendTokenToEmailDto } from "../dto/response-send-token-to-email.dto";
-import { SendTokenFromEmailService } from "src/common/services/send-email-token.service";
 import { EmailConfirmationService } from "../email-confirmation.service";
+import { InjectQueue } from "@nestjs/bull";
+import type { Queue } from "bull";
 
 @Injectable()
 export class SendTokenUseCase {
     constructor(
         private readonly tokenGeneratorService: TokenGeneratorService,
-        private readonly sendTokenFromEmailService: SendTokenFromEmailService,
-        private readonly emailConfirmationService: EmailConfirmationService
-    ) { }
-    
+        private readonly emailConfirmationService: EmailConfirmationService,
+        @InjectQueue('email') private readonly emailQueue: Queue
+    ) {}
     async execute(email: SendEmailConfirmationDto): Promise<ApiResponseDto<ResponseSendTokenToEmailDto>> {
         try {
             const generatedToken = this.tokenGeneratorService.generate();
@@ -30,9 +30,12 @@ export class SendTokenUseCase {
                 throw new BadRequestException('Failed to save token.');
             }
 
-            const sendEmailResult = await this.sendTokenFromEmailService.sendToken(email.email, generatedToken);
+            const sendEmailResult = await this.emailQueue.add({
+                email: email.email,
+                token: generatedToken
+            });
             if (!sendEmailResult) {
-                throw new BadRequestException('Failed to send email with the token.');
+                throw new Error('Failed to send email with the token.');
             }
 
             return { statusCode: 200, status: true, message: 'Token sent successfully!' };
