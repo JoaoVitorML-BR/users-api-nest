@@ -2,6 +2,7 @@ import { Body, Controller, Patch, Post } from "@nestjs/common";
 import { InjectQueue } from "@nestjs/bull";
 import type { Queue } from 'bull';
 import { SendEmailDto } from "./dto/send-email.dto";
+import { ConfirmEmailDto } from "./dto/confirm-email.dto";
 import { ActivateAccountUseCase } from "./use-cases/activate-account.use-case";
 
 @Controller('email-confirmation')
@@ -12,7 +13,7 @@ export class EmailConfirmationTokenController {
     ) { }
 
     @Patch('activate-account')
-    async ActivateAccount(@Body() body: { token: string }) {
+    async ActivateAccount(@Body() body: ConfirmEmailDto) {
         const emailConfirmation = await this.activateAccountUseCase.execute(body.token);
         return emailConfirmation;
     }
