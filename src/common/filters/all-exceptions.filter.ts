@@ -28,7 +28,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
       message = exception.message;
     }
 
-    // Mapeando status codes para códigos descritivos
+    // Mapping status codes to descriptive codes
     const codeMap = {
       [HttpStatus.BAD_REQUEST]: 'BAD_REQUEST',
       [HttpStatus.UNAUTHORIZED]: 'UNAUTHORIZED',

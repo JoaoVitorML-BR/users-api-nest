@@ -14,6 +14,7 @@ describe('UserService', () => {
     count: jest.fn(),
     create: jest.fn(),
     save: jest.fn(),
+    update: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -147,14 +148,14 @@ describe('UserService', () => {
         password: 'password123',
         role: ROLE.USER,
       };
-      const mockUser = { id: '1', ...userData };
+      const mockUser = { id: '1', name: userData.name, username: userData.username, email: userData.email, role: userData.role };
 
       mockRepository.create.mockReturnValue(mockUser);
       mockRepository.save.mockResolvedValue(mockUser);
 
       const result = await service.create(userData);
 
-      expect(result).toEqual(mockUser);
+        expect(result).toEqual(mockUser);
       expect(mockRepository.create).toHaveBeenCalledWith(userData);
       expect(mockRepository.save).toHaveBeenCalledWith(mockUser);
     });
@@ -167,14 +168,14 @@ describe('UserService', () => {
         password: 'admin123',
         role: ROLE.ADMIN_MASTER,
       };
-      const mockUser = { id: '1', ...userData };
+      const mockUser = { id: '1', name: userData.name, username: userData.username, email: userData.email, role: userData.role };
 
       mockRepository.create.mockReturnValue(mockUser);
       mockRepository.save.mockResolvedValue(mockUser);
 
       const result = await service.create(userData);
 
-      expect(result).toEqual(mockUser);
+        expect(result).toEqual(mockUser);
       expect(mockRepository.create).toHaveBeenCalledWith(userData);
     });
   });
@@ -211,6 +212,20 @@ describe('UserService', () => {
       const result = await service.checkUserExistsByEmailAndUsername('john@test.com', 'john123');
 
       expect(result).toBe(false);
+    });
+  });
+
+  describe('clearRefreshTokenIfPresent', () => {
+    it('should clear refresh token if present', async () => {
+      mockRepository.update.mockResolvedValue({ affected: 1 });
+
+      const result = await service.clearRefreshTokenIfPresent('123');
+
+      expect(mockRepository.update).toHaveBeenCalledWith(
+        expect.objectContaining({ id: '123' }),
+        { refreshToken: null }
+      );
+      expect(result).toEqual({ affected: 1 });
     });
   });
 });
