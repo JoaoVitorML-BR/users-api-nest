@@ -154,6 +154,7 @@ describe('AuthSignInUseCase', () => {
                 username: 'testuser',
                 email: 'testuser@example.com',
                 role: 'USER',
+                tokenType: 'refresh',
             };
             const mockUser = {
                 id: '123',
