@@ -17,6 +17,7 @@ export class FindAllUsersUseCase {
         return {
             statusCode: 200,
             status: true,
+            code: 'SUCCESS',
             message: 'Users retrieved successfully',
             data: res,
         }
