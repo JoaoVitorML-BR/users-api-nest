@@ -3,12 +3,14 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './modules/users/user.entity';
 import { UsersModule } from './modules/users/users.module';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
-import { APP_INTERCEPTOR, APP_FILTER } from '@nestjs/core';
+import { APP_INTERCEPTOR, APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { AuthModule } from './modules/auth/auth.module';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { EmailConfirmation } from './modules/users/email-confirmation/email-confirmation.entity';
 import { BullModule } from '@nestjs/bull';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 
 const isTestEnvironment = process.env.NODE_ENV === 'test';
 const shouldSynchronizeSchema =
@@ -16,11 +18,26 @@ const shouldSynchronizeSchema =
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
     BullModule.forRoot({
       redis: {
         host: 'localhost',
         port: 6379,
       },
+    }),
+    ThrottlerModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        throttlers: [
+          {
+            name: 'default',
+            limit: configService.get<number>('THROTTLE_LIMIT', 20),
+            ttl: configService.get<number>('THROTTLE_TTL_MS', 60_000),
+          },
+        ],
+      }),
     }),
     TypeOrmModule.forRoot(
       isTestEnvironment
@@ -55,6 +72,10 @@ const shouldSynchronizeSchema =
     {
       provide: APP_FILTER,
       useClass: AllExceptionsFilter,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
     },
   ],
 })
