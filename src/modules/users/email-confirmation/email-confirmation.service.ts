@@ -3,12 +3,14 @@ import { EmailConfirmation } from "./email-confirmation.entity";
 import { Repository } from "typeorm";
 import { BadRequestException, Injectable } from "@nestjs/common";
 import { User } from "../user.entity";
+import { ConfigService } from "@nestjs/config";
 
 @Injectable()
 export class EmailConfirmationService {
     constructor(
         @InjectRepository(EmailConfirmation) private readonly emailConfirmationEntity: Repository<EmailConfirmation>,
-        @InjectRepository(User) private readonly userRepository: Repository<User>
+        @InjectRepository(User) private readonly userRepository: Repository<User>,
+        private readonly configService: ConfigService,
     ) { }
 
     async saveToken(email: string, token: string): Promise<EmailConfirmation> {
@@ -18,7 +20,8 @@ export class EmailConfirmationService {
                 throw new Error('User not found for the provided email.');
             }
 
-            const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // Token expires in 24 hours
+            const expiresInHours = this.configService.get<number>('EMAIL_CONFIRMATION_EXPIRES_IN_HOURS', 24);
+            const expiresAt = new Date(Date.now() + expiresInHours * 60 * 60 * 1000);
             const emailConfirmation = this.emailConfirmationEntity.create({ token, user, expiresAt });
             return await this.emailConfirmationEntity.save(emailConfirmation);
         } catch (error) {
