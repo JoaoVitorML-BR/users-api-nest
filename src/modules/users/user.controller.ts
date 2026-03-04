@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, Param, Patch, Post, UseGuards, Request } from "@nestjs/common";
 import { FindAllUsersUseCase } from "./use-cases/find-all-users.use-case";
 import { CreateUserAdminDTO, CreateUserDTO } from "./dto/create-users.dto";
 import { CreateUsersUseCase } from "./use-cases/create-users.use-case";
@@ -10,6 +10,8 @@ import { ROLE } from "./user.entity";
 import { UpdateUserDTO } from "./dto/update-user.dto";
 import { UpdateUserUseCase } from "./use-cases/update-user.use-case";
 import { AuthorizationGuard } from "../auth/guards/authorization.guard";
+import { UpdatePasswordUserDTO } from "./dto/update-password-user.dto";
+import { UpdatePasswordUseCase } from "./use-cases/update-user-password.use-case";
 
 @Controller('users')
 export class UserController {
@@ -18,6 +20,7 @@ export class UserController {
         private readonly createUsersUseCase: CreateUsersUseCase,
         private readonly createAdminUseCase: CreateUsersAdminUseCase,
         private readonly updateUseCase: UpdateUserUseCase,
+        private readonly updatePasswordUseCase: UpdatePasswordUseCase
     ) { }
 
     @UseGuards(JwtGuard, RolesGuard)
@@ -44,5 +47,11 @@ export class UserController {
     @Patch(':id')
     async update(@Body() Data: UpdateUserDTO, @Param('id') id: string) {
         return this.updateUseCase.update(Data, id);
+    }
+
+    @UseGuards(JwtGuard)
+    @Patch('/password/:id')
+    async updatePassword(@Request() req: any, @Body() Data: UpdatePasswordUserDTO, @Param('id') id: string) {
+        return this.updatePasswordUseCase.updatePassword(Data, id, req.user.id);
     }
 }
