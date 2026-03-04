@@ -3,12 +3,18 @@ import { UserController } from './user.controller';
 import { FindAllUsersUseCase } from './use-cases/find-all-users.use-case';
 import { CreateUsersUseCase } from './use-cases/create-users.use-case';
 import { CreateUsersAdminUseCase } from './use-cases/create-users-admin.use-case';
+import { UpdateUserUseCase } from './use-cases/update-user.use-case';
+import { UpdatePasswordUseCase } from './use-cases/update-user-password.use-case';
 import { ROLE } from './user.entity';
+import { AuthorizationGuard } from '../auth/guards/authorization.guard';
+import { UserService } from './user.service';
 
 describe('UserController', () => {
   let controller: UserController;
   let findAllUsersUseCase: FindAllUsersUseCase;
   let createUsersUseCase: CreateUsersUseCase;
+  let updateUserUseCase: UpdateUserUseCase;
+  let updatePasswordUseCase: UpdatePasswordUseCase;
 
   const mockFindAllUsersUseCase = {
     findAll: jest.fn(),
@@ -20,6 +26,19 @@ describe('UserController', () => {
 
   const mockCreateUsersAdminUseCase = {
     createAdmin: jest.fn(),
+  };
+
+  const mockUpdateUserUseCase = {
+    update: jest.fn(),
+  };
+
+  const mockUpdatePasswordUseCase = {
+    updatePassword: jest.fn(),
+  };
+
+  const mockUserService = {
+    findById: jest.fn(),
+    findAll: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -38,12 +57,32 @@ describe('UserController', () => {
           provide: CreateUsersAdminUseCase,
           useValue: mockCreateUsersAdminUseCase,
         },
+        {
+          provide: UpdateUserUseCase,
+          useValue: mockUpdateUserUseCase,
+        },
+        {
+          provide: UpdatePasswordUseCase,
+          useValue: mockUpdatePasswordUseCase,
+        },
+        {
+          provide: UserService,
+          useValue: mockUserService,
+        },
+        {
+          provide: AuthorizationGuard,
+          useValue: {
+            canActivate: jest.fn(() => true),
+          },
+        },
       ],
     }).compile();
 
     controller = module.get<UserController>(UserController);
     findAllUsersUseCase = module.get<FindAllUsersUseCase>(FindAllUsersUseCase);
     createUsersUseCase = module.get<CreateUsersUseCase>(CreateUsersUseCase);
+    updateUserUseCase = module.get<UpdateUserUseCase>(UpdateUserUseCase);
+    updatePasswordUseCase = module.get<UpdatePasswordUseCase>(UpdatePasswordUseCase);
   });
 
   afterEach(() => {
