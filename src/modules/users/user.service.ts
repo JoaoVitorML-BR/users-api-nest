@@ -120,6 +120,9 @@ export class UserService {
                 });
             return userUpdateResult;
         } catch (error) {
+            if (error instanceof NotFoundException) {
+                throw error;
+            }
             throw new Error('Failed to update user');
         }
     }
