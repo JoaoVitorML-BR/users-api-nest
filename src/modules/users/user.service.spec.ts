@@ -248,4 +248,19 @@ describe('UserService', () => {
       await expect(service.update('1', { name: 'John Updated', username: 'johnupdated' })).rejects.toThrow('User not found');
     });
   });
+
+  describe('updatePassword', () => {
+    it('should update password successfully', async () => {
+      const mockUpdateResult = { affected: 1 };
+      mockRepository.update.mockResolvedValue(mockUpdateResult);
+      const result = await service.updatePassword('1', 'newhashedpassword');
+      expect(result).toBe(true);
+      expect(mockRepository.update).toHaveBeenCalledWith('1', { password: 'newhashedpassword' });
+    });
+
+    it('should throw error if user not found', async () => {
+      mockRepository.update.mockResolvedValue({ affected: 0 });
+      await expect(service.updatePassword('1', 'newhashedpassword')).rejects.toThrow('User not found');
+    });
+  });
 });
