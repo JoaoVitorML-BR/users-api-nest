@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { User } from "./user.entity";
 import { InjectRepository } from "@nestjs/typeorm";
 import { IsNull, Not, Repository, UpdateResult } from "typeorm";
@@ -103,6 +103,24 @@ export class UserService {
             );
         } catch (error) {
             throw new Error('Failed to clear refresh token');
+        }
+    }
+
+    async update(id: string, data: Partial<{ name: string, username: string }>) {
+        try {
+            const updateResult = await this.userEntity.update(id, data);
+            if (updateResult.affected === 0) {
+                throw new NotFoundException('User not found');
+            }
+
+            const userUpdateResult = await this.userEntity.findOne(
+                {
+                    where: { id },
+                    select: ['id', 'name', 'username', 'role', 'isActive', 'updatedAt']
+                });
+            return userUpdateResult;
+        } catch (error) {
+            throw new Error('Failed to update user');
         }
     }
 };
