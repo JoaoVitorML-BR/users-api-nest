@@ -21,6 +21,10 @@ describe('SendTokenUseCase', () => {
         saveToken: jest.fn(),
     };
 
+    const mockEmailQueue = {
+        add: jest.fn(),
+    };
+
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
             providers: [
@@ -35,6 +39,10 @@ describe('SendTokenUseCase', () => {
                 {
                     provide: EmailConfirmationService,
                     useValue: mockEmailConfirmationService,
+                },
+                {
+                    provide: 'BullQueue_email',
+                    useValue: mockEmailQueue,
                 },
                 SendTokenUseCase,
             ],
