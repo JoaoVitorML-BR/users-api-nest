@@ -126,4 +126,19 @@ export class UserService {
             throw new Error('Failed to update user');
         }
     }
+
+    async updatePassword(id: string, hashedPassword: string) {
+        try {
+            const updateResult = await this.userEntity.update(id, { password: hashedPassword });
+            if (updateResult.affected === 0) {
+                throw new NotFoundException('User not found');
+            }
+            return true;
+        } catch (error) {
+            if (error instanceof NotFoundException) {
+                throw error;
+            }
+            throw new Error('Failed to update password');
+        }
+    }
 };
