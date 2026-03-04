@@ -67,5 +67,36 @@ describe('UpdateUserUseCase', () => {
             expect(result.code).toBe('SUCCESS');
             expect(result.data).toEqual(mockUpdatedUser);
         });
+
+        it('should throw error if user not found', async () => {
+            const updateData = {
+                name: 'John Updated',
+                username: 'johnupdated',
+            };
+            (userService.findById as jest.Mock).mockResolvedValue(null);
+
+            await expect(updateUserUseCase.update(updateData, '1')).rejects.toThrow('User not found');
+        });
+
+        it('should throw error if update fails', async () => {
+            const mockUser = {
+                id: '1',
+                name: 'John Doe',
+                username: 'john123',
+                email: 'john@example.com',
+                role: 'USER',
+                isActive: true,
+                createdAt: new Date(),
+                updatedAt: new Date()
+            };
+            const updateData = {
+                name: 'John Updated',
+                username: 'johnupdated',
+            };
+            (userService.findById as jest.Mock).mockResolvedValue(mockUser);
+            (userService.update as jest.Mock).mockRejectedValue(new Error('Update failed'));
+
+            await expect(updateUserUseCase.update(updateData, '1')).rejects.toThrow('Update failed');
+        });
     });
 });
