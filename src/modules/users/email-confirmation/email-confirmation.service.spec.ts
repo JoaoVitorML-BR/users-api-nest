@@ -3,6 +3,7 @@ import { EmailConfirmationService } from "./email-confirmation.service";
 import { getRepositoryToken } from "@nestjs/typeorm";
 import { EmailConfirmation } from "./email-confirmation.entity";
 import { ROLE, User } from "../user.entity";
+import { ConfigService } from "@nestjs/config";
 
 describe('EmailConfirmationService', () => {
     let service: EmailConfirmationService;
@@ -58,6 +59,10 @@ describe('EmailConfirmationService', () => {
             save: jest.fn(),
         };
 
+        const mockConfigService = {
+            get: jest.fn(() => 3600),
+        };
+
         const module: TestingModule = await Test.createTestingModule({
             providers: [
                 EmailConfirmationService,
@@ -68,6 +73,10 @@ describe('EmailConfirmationService', () => {
                 {
                     provide: getRepositoryToken(User),
                     useValue: mockUserRepository,
+                },
+                {
+                    provide: ConfigService,
+                    useValue: mockConfigService,
                 },
             ],
         }).compile();
