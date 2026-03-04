@@ -107,7 +107,19 @@ describe('UpdatePasswordUseCase', () => {
             (userService.findById as jest.Mock).mockResolvedValue(mockUser);
             (bcrypt.compare as jest.Mock).mockResolvedValue(true);
 
-            await expect(updatePasswordUseCase.updatePassword(updateData, '1', '1')).rejects.toThrow('New passwords do not match');
+            await expect(updatePasswordUseCase.updatePassword(updateData, '1', '1')).rejects.toThrow('Passwords do not match');
+        });
+
+        it('should throw BadRequestException for user not found', async () => {
+            const updateData = {
+                currentPassword: 'currentpassword',
+                newPassword: 'NewPassword123!',
+                confirmNewPassword: 'NewPassword123!'
+            };
+            (userService.findById as jest.Mock).mockResolvedValue(null);
+
+            await expect(updatePasswordUseCase.updatePassword(updateData, '1', '1')).rejects.toThrow('User not found'); 
+
         });
     });
 });
