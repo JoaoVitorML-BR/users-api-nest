@@ -8,7 +8,7 @@
 
 ## Auth-user
 
-- Login com rate limit por endpoint
-- Refresh token com rotação (novo token a cada refresh)
-- Refresh token salvo com hash no banco
-- Logout remove refresh token persistido
+- Login with rate limit for endpoint
+- Refresh token with rotation (new token each refresh)
+- Refresh token saved with hash
+- Logout remove refresh token persistido persistes
