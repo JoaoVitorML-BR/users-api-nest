@@ -14,7 +14,7 @@ export class CreateUserDTO {
     @MaxLength(15)
     @Transform(({ value }) => value?.trim().toLowerCase())
     @Matches(/^[a-z0-9]+(?:[._-][a-z0-9]+)*$/, {
-        message: 'Username pode ter letras minúsculas, números e separadores . _ - (sem repetir ou começar/terminar com eles)',
+        message: 'Username can contain lowercase letters, numbers and separators . _ - (without repeating or starting/ending with them)',
     })
     username: string;
 

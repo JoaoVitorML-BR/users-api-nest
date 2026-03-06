@@ -66,6 +66,7 @@ describe('FindAllUsersUseCase', () => {
 
       expect(mockUserService.findAll).toHaveBeenCalledTimes(1);
       expect(result).toEqual({
+        code: 'SUCCESS',
         statusCode: 200,
         status: true,
         message: 'Users retrieved successfully',
@@ -80,6 +81,7 @@ describe('FindAllUsersUseCase', () => {
 
       expect(mockUserService.findAll).toHaveBeenCalledTimes(1);
       expect(result).toEqual({
+        code: 'SUCCESS',
         statusCode: 200,
         status: true,
         message: 'Users retrieved successfully',

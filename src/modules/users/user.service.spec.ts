@@ -155,7 +155,7 @@ describe('UserService', () => {
 
       const result = await service.create(userData);
 
-        expect(result).toEqual(mockUser);
+      expect(result).toEqual(mockUser);
       expect(mockRepository.create).toHaveBeenCalledWith(userData);
       expect(mockRepository.save).toHaveBeenCalledWith(mockUser);
     });
@@ -175,7 +175,7 @@ describe('UserService', () => {
 
       const result = await service.create(userData);
 
-        expect(result).toEqual(mockUser);
+      expect(result).toEqual(mockUser);
       expect(mockRepository.create).toHaveBeenCalledWith(userData);
     });
   });
@@ -226,6 +226,41 @@ describe('UserService', () => {
         { refreshToken: null }
       );
       expect(result).toEqual({ affected: 1 });
+    });
+  });
+
+  describe('update', () => {
+    it('should update user successfully', async () => {
+      const mockUpdateResult = { affected: 1 };
+      const mockUpdatedUser = { id: '1', name: 'John Updated', username: 'johnupdated', role: ROLE.USER, isActive: true, updatedAt: new Date() };
+      mockRepository.update.mockResolvedValue(mockUpdateResult);
+      mockRepository.findOne.mockResolvedValue(mockUpdatedUser);
+      const result = await service.update('1', { name: 'John Updated', username: 'johnupdated' });
+
+      expect(result).toEqual(mockUpdatedUser);
+      expect(mockRepository.update).toHaveBeenCalledWith('1', { name: 'John Updated', username: 'johnupdated' });
+    });
+
+    it('should throw error if user not found', async () => {
+      mockRepository.update.mockResolvedValue({ affected: 0 });
+      mockRepository.findOne.mockResolvedValue(null);
+
+      await expect(service.update('1', { name: 'John Updated', username: 'johnupdated' })).rejects.toThrow('User not found');
+    });
+  });
+
+  describe('updatePassword', () => {
+    it('should update password successfully', async () => {
+      const mockUpdateResult = { affected: 1 };
+      mockRepository.update.mockResolvedValue(mockUpdateResult);
+      const result = await service.updatePassword('1', 'newhashedpassword');
+      expect(result).toBe(true);
+      expect(mockRepository.update).toHaveBeenCalledWith('1', { password: 'newhashedpassword' });
+    });
+
+    it('should throw error if user not found', async () => {
+      mockRepository.update.mockResolvedValue({ affected: 0 });
+      await expect(service.updatePassword('1', 'newhashedpassword')).rejects.toThrow('User not found');
     });
   });
 });

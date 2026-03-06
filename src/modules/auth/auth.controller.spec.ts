@@ -105,7 +105,7 @@ describe('AuthController', () => {
                     name: 'Test User',
                     role: 'USER',
                 }
-            }
+            } as any;
 
             const mockLogoutResponse = {
                 statusCode: 200,
