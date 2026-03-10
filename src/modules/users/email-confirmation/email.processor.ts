@@ -9,7 +9,7 @@ export class EmailConfirmationProcessor {
 
     @Process() // Process all jobs in the 'email' queue
     async handleSendEmail(job: Job) {
-        const { email, token } = job.data;
-        await this.sendTokenFromEmailService.sendToken(email, token);
+        const { email, token, type, userName } = job.data;
+        await this.sendTokenFromEmailService.sendToken(email, token, type, userName);
     }
 }
