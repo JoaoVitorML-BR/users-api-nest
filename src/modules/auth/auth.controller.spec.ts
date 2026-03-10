@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 
 import { AuthController } from "./auth.controller";
 import { AuthSignInUseCase } from "./use-cases/auth-login.use-case";
+import { ResetPasswordUseCase } from './password-reset/use-case/reset-password.use-case';
 
 describe('AuthController', () => {
     let controller: AuthController;
@@ -30,6 +31,7 @@ describe('AuthController', () => {
         signIn: jest.fn(),
         refreshToken: jest.fn(),
         logout: jest.fn(),
+        resetPassword: jest.fn(),
     }
 
     beforeEach(async () => {
@@ -40,6 +42,10 @@ describe('AuthController', () => {
                     provide: AuthSignInUseCase,
                     useValue: mockAuthUseCase,
                 },
+                {
+                    provide: ResetPasswordUseCase,
+                    useValue: mockAuthUseCase
+                }
             ],
         }).compile();
         controller = module.get<AuthController>(AuthController);
