@@ -8,6 +8,7 @@ import { AppController } from './app.controller';
 import { AuthModule } from './modules/auth/auth.module';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { EmailConfirmation } from './modules/users/email-confirmation/email-confirmation.entity';
+import { ResetPasswordToken } from './modules/auth/password-reset/password-reset.entity';
 import { BullModule } from '@nestjs/bull';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
@@ -44,7 +45,7 @@ const shouldSynchronizeSchema =
         ? {
           type: 'sqlite',
           database: ':memory:',
-          entities: [User, EmailConfirmation],
+          entities: [User, EmailConfirmation, ResetPasswordToken],
           synchronize: true,
           logging: false,
         }
@@ -55,7 +56,7 @@ const shouldSynchronizeSchema =
           username: process.env.DB_USERNAME,
           password: process.env.DB_PASSWORD,
           database: process.env.DB_DATABASE,
-          entities: [User, EmailConfirmation],
+          entities: [User, EmailConfirmation, ResetPasswordToken],
           synchronize: shouldSynchronizeSchema,
           logging: true,
         },
