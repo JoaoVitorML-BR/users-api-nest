@@ -1,19 +1,21 @@
 import { Body, Controller, HttpCode, HttpStatus, Post } from "@nestjs/common";
 import { ForgotPasswordDTO, ResetPasswordDTO } from "./dto/reset-password.dto";
 import { ApiResponseDto } from "src/modules/users/dto/api-response.dto";
-import { ResetPasswordUseCase } from "./use-case/reset-password.use-case";
+import { PassworResetdUseCase } from "./use-case/reset-password.use-case";
+import { PasswordForgotUseCase } from "./use-case/forgot-password.use-case";
 
 @Controller('auth/password')
 export class PasswordResetController {
 
     constructor(
-        private readonly resetPasswordUseCase: ResetPasswordUseCase,
+        private readonly passwordForgotUseCase: PasswordForgotUseCase,
+        private readonly resetPasswordUseCase: PassworResetdUseCase,
     ) { }
 
     @HttpCode(HttpStatus.OK)
     @Post('forgot')
     async forgotPassword(@Body() data: ForgotPasswordDTO): Promise<ApiResponseDto<null>> {
-        await this.resetPasswordUseCase.forgotPassword(data.email);
+        await this.passwordForgotUseCase.forgotPassword(data.email);
         return {
             statusCode: HttpStatus.OK,
             code: 'SUCCESS',
