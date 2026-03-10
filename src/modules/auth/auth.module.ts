@@ -8,11 +8,13 @@ import { JwtStrategy } from "./strategies/jwt.strategy";
 import { PassportModule } from "@nestjs/passport";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { parseExpiresInToSeconds } from "src/common/utils/time.util";
+import { PasswordResetModule } from "./password-reset/password-reset.module";
 
 @Module({
     imports: [
         ConfigModule,
         UsersModule,
+        PasswordResetModule,
         PassportModule.register({ defaultStrategy: 'jwt' }),
         JwtModule.registerAsync({
             inject: [ConfigService],
