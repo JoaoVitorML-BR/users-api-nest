@@ -15,7 +15,7 @@ export class ResetPasswordUseCase {
         @InjectQueue('email') private readonly emailQueue: Queue,
     ) { }
 
-    async forgotPassword(email: string) {
+    async forgotPassword(email: string): Promise<void> {
         const userByEmailExists = await this.passwordResetService.findUserByEmail(email);
         if (!userByEmailExists) {
             this.logger.warn(`Password reset attempted for non-existent email: ${email}`);
@@ -40,10 +40,9 @@ export class ResetPasswordUseCase {
         });
 
         this.logger.log(`Password reset token queued for email: ${email}`);
-        return userByEmailExists;
     }
 
-    async resetPassword(data: ResetPasswordDTO) {
+    async resetPassword(data: ResetPasswordDTO): Promise<void> {
         if (data.newPassword !== data.confirmNewPassword) {
             throw new BadRequestException('New password and confirm new password do not match');
         }

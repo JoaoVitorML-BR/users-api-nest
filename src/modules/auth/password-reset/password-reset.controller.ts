@@ -1,5 +1,5 @@
 import { Body, Controller, HttpCode, HttpStatus, Post } from "@nestjs/common";
-import { ForgotPasswordDTO, ResponseResetPasswordDTO, ResetPasswordDTO } from "./dto/reset-password.dto";
+import { ForgotPasswordDTO, ResetPasswordDTO } from "./dto/reset-password.dto";
 import { ApiResponseDto } from "src/modules/users/dto/api-response.dto";
 import { ResetPasswordUseCase } from "./use-case/reset-password.use-case";
 
@@ -12,19 +12,19 @@ export class PasswordResetController {
 
     @HttpCode(HttpStatus.OK)
     @Post('forgot')
-    async forgotPassword(@Body() data: ForgotPasswordDTO): Promise<ApiResponseDto<ResponseResetPasswordDTO>> {
+    async forgotPassword(@Body() data: ForgotPasswordDTO): Promise<ApiResponseDto<null>> {
         await this.resetPasswordUseCase.forgotPassword(data.email);
         return {
             statusCode: HttpStatus.OK,
             code: 'SUCCESS',
             status: true,
-            message: `if the email ${data.email} exists in our system, a password reset token has been sent.`,
+            message: 'If the email exists in our system, a password reset token has been sent.',
         }
     }   
 
     @HttpCode(HttpStatus.OK)
     @Post('reset')
-    async resetPasswordWithToken(@Body() data: ResetPasswordDTO): Promise<ApiResponseDto<ResponseResetPasswordDTO>> {
+    async resetPasswordWithToken(@Body() data: ResetPasswordDTO): Promise<ApiResponseDto<null>> {
         await this.resetPasswordUseCase.resetPassword(data);
         return {
             statusCode: HttpStatus.OK,

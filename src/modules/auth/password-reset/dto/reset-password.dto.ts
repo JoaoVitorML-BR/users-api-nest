@@ -33,10 +33,3 @@ export class ResetPasswordDTO {
     }, { message: 'The password must be at least 8 characters long and include uppercase, lowercase, number and symbol.' })
     confirmNewPassword: string;
 };
-
-export class ResponseResetPasswordDTO {
-    statusCode: number;
-    code: string;
-    status: string;
-    message: string;
-}
