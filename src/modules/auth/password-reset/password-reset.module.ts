@@ -7,7 +7,8 @@ import { UsersModule } from "src/modules/users/users.module";
 import { PasswordResetController } from "./password-reset.controller";
 import { ResetPasswordToken } from "./password-reset.entity";
 import { PasswordResetService } from "./password-reset.service";
-import { ResetPasswordUseCase } from "./use-case/reset-password.use-case";
+import { PassworResetdUseCase } from "./use-case/reset-password.use-case";
+import { PasswordForgotUseCase } from "./use-case/forgot-password.use-case";
 
 @Module({
     imports: [
@@ -21,10 +22,11 @@ import { ResetPasswordUseCase } from "./use-case/reset-password.use-case";
     controllers: [PasswordResetController],
     providers: [
         PasswordResetService,
-        ResetPasswordUseCase,
+        PassworResetdUseCase,
         TokenGeneratorService,
+        PasswordForgotUseCase,
     ],
-    exports: [PasswordResetService, ResetPasswordUseCase],
+    exports: [PasswordResetService, PassworResetdUseCase],
 })
 
 export class PasswordResetModule { }
