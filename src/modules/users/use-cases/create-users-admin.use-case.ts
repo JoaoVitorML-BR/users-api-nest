@@ -1,5 +1,4 @@
 import { CreateUserAdminDTO } from "../dto/create-users.dto";
-import { ApiResponseDto } from "../dto/api-response.dto";
 import { BadRequestException, ConflictException, Injectable, InternalServerErrorException } from "@nestjs/common";
 import { ROLE } from "../user.entity";
 
@@ -15,7 +14,7 @@ export class CreateUsersAdminUseCase {
         private readonly sendTokenUseCase: SendTokenUseCase
     ) { }
 
-    async createAdmin(Data: CreateUserAdminDTO): Promise<ApiResponseDto<ResponseCreateUsersDto>> {
+    async createAdmin(Data: CreateUserAdminDTO): Promise<ResponseCreateUsersDto> {
         try {
             if (!Data.name || !Data.email || !Data.password || !Data.username) {
                 throw new BadRequestException("Name, username, email and password are required");
@@ -34,12 +33,7 @@ export class CreateUsersAdminUseCase {
             }
 
             this.sendTokenUseCase.execute({ email: res.email });
-            return {
-                statusCode: 201,
-                code: "SUCCESS",
-                status: true,
-                message: "Admin user created successfully"
-            };
+            return res;
         } catch (error) {
             if (error instanceof BadRequestException || error instanceof ConflictException || error instanceof InternalServerErrorException) {
                 throw error;
