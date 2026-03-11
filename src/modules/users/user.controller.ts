@@ -13,6 +13,8 @@ import { AuthorizationGuard } from "../auth/guards/authorization.guard";
 import { UpdatePasswordUserDTO } from "./dto/update-password-user.dto";
 import { UpdatePasswordUseCase } from "./use-cases/update-user-password.use-case";
 import { FindByIdUsersUseCase } from "./use-cases/find-by-id-users.use-case";
+import { FindByEmailUsersUseCase } from "./use-cases/find-by-email-users.use-case";
+import { FindByUsernameUsersUseCase } from "./use-cases/find-by-username-users.use-case";
 
 @Controller('users')
 export class UserController {
@@ -22,7 +24,9 @@ export class UserController {
         private readonly createAdminUseCase: CreateUsersAdminUseCase,
         private readonly updateUseCase: UpdateUserUseCase,
         private readonly updatePasswordUseCase: UpdatePasswordUseCase,
-        private readonly findByIdUserUseCase: FindByIdUsersUseCase
+        private readonly findByIdUserUseCase: FindByIdUsersUseCase,
+        private readonly findByEmailUseCase: FindByEmailUsersUseCase,
+        private readonly findByUsernameUseCase: FindByUsernameUsersUseCase
     ) { }
 
     @UseGuards(JwtGuard, RolesGuard)
@@ -102,6 +106,33 @@ export class UserController {
     @Get(':id')
     async findById(@Param('id') id: string) {
         const user = await this.findByIdUserUseCase.findById(id);
+
+        return {
+            statusCode: 200,
+            status: true,
+            code: 'SUCCESS',
+            message: 'User retrieved successfully',
+            data: user,
+        };
+    }
+
+    @UseGuards(JwtGuard)
+    @Get('email/:email')
+    async findByEmail(@Request() req: any, @Param('email') email: string) {
+        const user = await this.findByEmailUseCase.findByEmail(email, req.user);
+
+        return {
+            statusCode: 200,
+            status: true,
+            code: 'SUCCESS',
+            message: 'User retrieved successfully',
+            data: user,
+        };
+    }
+
+    @Get('username/:username')
+    async findByUsername(@Param('username') username: string) {
+        const user = await this.findByUsernameUseCase.findByUsername(username);
 
         return {
             statusCode: 200,
