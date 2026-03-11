@@ -11,6 +11,8 @@ Provide user lifecycle operations with clear role-based access rules:
 3. Authenticated user update.
 4. Authenticated password update (self only).
 5. User listing and retrieval with role checks.
+6. Public user lookup by username.
+7. Private user lookup by email.
 
 ## Folder Structure
 
@@ -109,6 +111,19 @@ Provide user lifecycle operations with clear role-based access rules:
 5. Hash and persist new password.
 6. Return success envelope with `data: null`.
 
+### 7) `GET /users/email/:email` (Find by email - private)
+
+1. Protected by `JwtGuard`.
+2. `ADMIN_MASTER` and `ADMIN` can fetch any email.
+3. `USER` can fetch only own email.
+4. Returns user safe fields if found.
+
+### 8) `GET /users/username/:username` (Find by username - public)
+
+1. Public route (no auth guard).
+2. Username normalized to lowercase before search.
+3. Returns user safe fields if found.
+
 ## Security and Authorization Rules
 
 1. Never store plaintext passwords.
@@ -126,6 +141,10 @@ Provide user lifecycle operations with clear role-based access rules:
 
 5. Keep safe field projection.
 	- List/find operations should avoid returning sensitive fields like password.
+
+6. Keep email privacy by role.
+	- Email lookup must not expose arbitrary users to regular users.
+	- Only admins can query any email.
 
 ## Response Contract
 
@@ -153,6 +172,8 @@ Module follows the global API envelope:
 | `GET /users/:id` | `200` | User object | `400`, `401`, `403`, `404` |
 | `PATCH /users/:id` | `200` | Updated user in `data` | `400`, `401`, `403`, `404` |
 | `PATCH /users/password/:id` | `200` | `data: null` | `400`, `401`, `403`, `404` |
+| `GET /users/email/:email` | `200` | User object | `400`, `401`, `403`, `404` |
+| `GET /users/username/:username` | `200` | User object | `400`, `404` |
 
 ## DTO and Validation Notes
 
