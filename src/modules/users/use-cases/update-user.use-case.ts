@@ -29,12 +29,6 @@ export class UpdateUserUseCase {
             throw new BadRequestException('Failed to update user. No changes were made.');
         }
 
-        return {
-            statusCode: 200,
-            status: true,
-            code: 'SUCCESS',
-            message: 'User updated successfully',
-            data: updatedUser,
-        }
+        return updatedUser;
     }
 }

@@ -12,6 +12,9 @@ import { UpdateUserUseCase } from "./use-cases/update-user.use-case";
 import { AuthorizationGuard } from "../auth/guards/authorization.guard";
 import { UpdatePasswordUserDTO } from "./dto/update-password-user.dto";
 import { UpdatePasswordUseCase } from "./use-cases/update-user-password.use-case";
+import { FindByIdUsersUseCase } from "./use-cases/find-by-id-users.use-case";
+import { FindByEmailUsersUseCase } from "./use-cases/find-by-email-users.use-case";
+import { FindByUsernameUsersUseCase } from "./use-cases/find-by-username-users.use-case";
 
 @Controller('users')
 export class UserController {
@@ -20,38 +23,123 @@ export class UserController {
         private readonly createUsersUseCase: CreateUsersUseCase,
         private readonly createAdminUseCase: CreateUsersAdminUseCase,
         private readonly updateUseCase: UpdateUserUseCase,
-        private readonly updatePasswordUseCase: UpdatePasswordUseCase
+        private readonly updatePasswordUseCase: UpdatePasswordUseCase,
+        private readonly findByIdUserUseCase: FindByIdUsersUseCase,
+        private readonly findByEmailUseCase: FindByEmailUsersUseCase,
+        private readonly findByUsernameUseCase: FindByUsernameUsersUseCase
     ) { }
 
     @UseGuards(JwtGuard, RolesGuard)
     @Roles(ROLE.ADMIN_MASTER, ROLE.ADMIN)
     @Get()
     async findAll() {
-        return this.findAllUsersUseCase.findAll();
+        const users = await this.findAllUsersUseCase.findAll();
+
+        return {
+            statusCode: 200,
+            status: true,
+            code: 'SUCCESS',
+            message: 'Users retrieved successfully',
+            data: users,
+        };
     }
 
     @UseGuards(JwtGuard, RolesGuard)
     @Roles(ROLE.ADMIN_MASTER)
     @Post('create-admin')
     async createAdmin(@Body() Data: CreateUserAdminDTO) {
-        return this.createAdminUseCase.createAdmin(Data);
+        const createdAdmin = await this.createAdminUseCase.createAdmin(Data);
+
+        return {
+            statusCode: 201,
+            status: true,
+            code: 'CREATED',
+            message: 'Admin user created successfully',
+            data: createdAdmin,
+        };
     }
 
     @Post()
     async create(@Body() Data: CreateUserDTO) {
-        return this.createUsersUseCase.create(Data);
+        const createdUser = await this.createUsersUseCase.create(Data);
+
+        return {
+            statusCode: 201,
+            status: true,
+            code: 'CREATED',
+            message: 'User created successfully',
+            data: createdUser,
+        };
     }
 
     @UseGuards(JwtGuard, RolesGuard, AuthorizationGuard)
     @Roles(ROLE.ADMIN_MASTER, ROLE.ADMIN, ROLE.USER)
     @Patch(':id')
     async update(@Body() Data: UpdateUserDTO, @Param('id') id: string) {
-        return this.updateUseCase.update(Data, id);
+        const updatedUser = await this.updateUseCase.update(Data, id);
+
+        return {
+            statusCode: 200,
+            status: true,
+            code: 'SUCCESS',
+            message: 'User updated successfully',
+            data: updatedUser,
+        };
     }
 
     @UseGuards(JwtGuard)
     @Patch('/password/:id')
     async updatePassword(@Request() req: any, @Body() Data: UpdatePasswordUserDTO, @Param('id') id: string) {
-        return this.updatePasswordUseCase.updatePassword(Data, id, req.user.id);
+        await this.updatePasswordUseCase.updatePassword(Data, id, req.user.id);
+
+        return {
+            statusCode: 200,
+            status: true,
+            code: 'SUCCESS',
+            message: 'Password updated successfully',
+            data: null,
+        };
+    }
+
+    @UseGuards(JwtGuard, RolesGuard, AuthorizationGuard)
+    @Roles(ROLE.ADMIN_MASTER, ROLE.ADMIN, ROLE.USER)
+    @Get(':id')
+    async findById(@Param('id') id: string) {
+        const user = await this.findByIdUserUseCase.findById(id);
+
+        return {
+            statusCode: 200,
+            status: true,
+            code: 'SUCCESS',
+            message: 'User retrieved successfully',
+            data: user,
+        };
+    }
+
+    @UseGuards(JwtGuard)
+    @Get('email/:email')
+    async findByEmail(@Request() req: any, @Param('email') email: string) {
+        const user = await this.findByEmailUseCase.findByEmail(email, req.user);
+
+        return {
+            statusCode: 200,
+            status: true,
+            code: 'SUCCESS',
+            message: 'User retrieved successfully',
+            data: user,
+        };
+    }
+
+    @Get('username/:username')
+    async findByUsername(@Param('username') username: string) {
+        const user = await this.findByUsernameUseCase.findByUsername(username);
+
+        return {
+            statusCode: 200,
+            status: true,
+            code: 'SUCCESS',
+            message: 'User retrieved successfully',
+            data: user,
+        };
     }
 }

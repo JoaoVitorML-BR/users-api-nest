@@ -73,12 +73,7 @@ describe('CreateUsersUseCase', () => {
         password: expect.any(String),
         role: ROLE.ADMIN_MASTER,
       });
-        expect(result).toEqual({
-          statusCode: 201,
-          status: true,
-          code: 'CREATED',
-          message: 'User created successfully',
-        });
+      expect(result).toEqual(mockCreatedUser);
     });
 
     it('should throw InternalServerErrorException if first user creation fails', async () => {
@@ -124,12 +119,7 @@ describe('CreateUsersUseCase', () => {
         password: expect.any(String),
         role: ROLE.USER,
       });
-        expect(result).toEqual({
-          statusCode: 201,
-          status: true,
-          code: 'CREATED',
-          message: 'User created successfully',
-        });
+      expect(result).toEqual(mockCreatedUser);
     });
 
     it('should throw InternalServerErrorException if regular user creation fails', async () => {

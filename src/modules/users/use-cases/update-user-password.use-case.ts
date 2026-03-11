@@ -33,12 +33,6 @@ export class UpdatePasswordUseCase {
         await this.userService.updatePassword(id, newPasswordHash);
 
         this.logger.log(`Password updated successfully for user ${id}`);
-        return {
-            statusCode: 200,
-            status: true,
-            code: 'SUCCESS',
-            message: 'Password updated successfully',
-            data: null
-        };
+        return true;
     }
 }

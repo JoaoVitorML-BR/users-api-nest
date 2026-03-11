@@ -61,13 +61,7 @@ describe('UpdatePasswordUseCase', () => {
             expect(userService.findById).toHaveBeenCalledWith('1');
             expect(bcrypt.compare).toHaveBeenCalledWith('currentpassword', mockUser.password);
             expect(userService.updatePassword).toHaveBeenCalled();
-            expect(result).toEqual({
-                statusCode: 200,
-                status: true,
-                code: 'SUCCESS',
-                message: 'Password updated successfully',
-                data: null
-            });
+            expect(result).toBe(true);
         });
 
         it('should throw BadRequestException for incorrect current password', async () => {

@@ -28,7 +28,10 @@ export class UserService {
 
     async findByEmail(email: string) {
         try {
-            return await this.userEntity.findOne({ where: { email } });
+            return await this.userEntity.findOne({
+                select: ['id', 'name', 'username', 'email', 'role', 'isActive', 'createdAt', 'updatedAt'],
+                where: { email }
+            });
         } catch (error) {
             throw new Error('Failed to fetch user by email');
         }
@@ -36,7 +39,10 @@ export class UserService {
 
     async findByUsername(username: string) {
         try {
-            return await this.userEntity.findOne({ where: { username } });
+            return await this.userEntity.findOne({
+                select: ['id', 'name', 'username', 'email', 'role', 'isActive', 'createdAt', 'updatedAt'],
+                where: { username }
+            });
         } catch (error) {
             throw new Error('Failed to fetch user by username');
         }
@@ -44,7 +50,10 @@ export class UserService {
 
     async findById(id: string) {
         try {
-            return await this.userEntity.findOne({ where: { id } });
+            return await this.userEntity.findOne({
+                select: ['id', 'name', 'username', 'email', 'role', 'isActive', 'createdAt', 'updatedAt'],
+                where: { id }
+            });
         } catch (error) {
             throw new Error('Failed to fetch user by id');
         }
@@ -71,7 +80,7 @@ export class UserService {
 
     async checkUserExistsByEmailAndUsername(email: string, username: string) {
         try {
-            const user = await this.userEntity.findOne({ where: { email } });
+            const user = await this.userEntity.findOne({ select: ['id'], where: { email } });
             const userByUsername = await this.userEntity.findOne({ where: { username } });
             return !!user || !!userByUsername;
         } catch (error) {
