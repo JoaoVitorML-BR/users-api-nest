@@ -5,7 +5,6 @@ import { CreateUserDTO } from "../dto/create-users.dto";
 import * as bcrypt from 'bcrypt';
 
 import { ROLE } from "../user.entity";
-import { ApiResponseDto } from "../dto/api-response.dto";
 import { SendTokenUseCase } from "../email-confirmation/use-cases/send-token.use-case";
 import { ResponseCreateUsersDto } from "../dto/response-create-users.dto";
 
@@ -16,7 +15,7 @@ export class CreateUsersUseCase {
         private readonly sendTokenUseCase: SendTokenUseCase
     ) { }
 
-    async create(Data: CreateUserDTO): Promise<ApiResponseDto<ResponseCreateUsersDto>> {
+    async create(Data: CreateUserDTO): Promise<ResponseCreateUsersDto> {
 
         if (!Data.name || !Data.email || !Data.password || !Data.username) {
             throw new BadRequestException("Name, username, email and password are required");
@@ -35,12 +34,7 @@ export class CreateUsersUseCase {
 
             this.sendTokenUseCase.execute({ email: user.email });
 
-            return {
-                statusCode: 201,
-                status: true,
-                code: 'CREATED',
-                message: "User created successfully"
-            };
+            return user;
         }
 
         const userExists = await this.userService.checkUserExistsByEmailAndUsername(Data.email, Data.username);
@@ -56,11 +50,6 @@ export class CreateUsersUseCase {
 
         this.sendTokenUseCase.execute({ email: res.email });
 
-        return {
-            statusCode: 201,
-            status: true,
-            code: 'CREATED',
-            message: "User created successfully"
-        };
+        return res;
     }
 }
