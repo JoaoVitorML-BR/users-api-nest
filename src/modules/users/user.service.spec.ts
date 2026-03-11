@@ -1,12 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UserService } from './user.service';
-import { Repository } from 'typeorm';
 import { User, ROLE } from './user.entity';
 import { getRepositoryToken } from '@nestjs/typeorm';
 
 describe('UserService', () => {
   let service: UserService;
-  let repository: Repository<User>;
 
   const mockRepository = {
     find: jest.fn(),
@@ -15,6 +13,7 @@ describe('UserService', () => {
     create: jest.fn(),
     save: jest.fn(),
     update: jest.fn(),
+    findById: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -29,7 +28,6 @@ describe('UserService', () => {
     }).compile();
 
     service = module.get<UserService>(UserService);
-    repository = module.get<Repository<User>>(getRepositoryToken(User));
   });
 
   afterEach(() => {
@@ -92,7 +90,10 @@ describe('UserService', () => {
       const result = await service.findByEmail('john@test.com');
 
       expect(result).toEqual(mockUser);
-      expect(mockRepository.findOne).toHaveBeenCalledWith({ where: { email: 'john@test.com' } });
+      expect(mockRepository.findOne).toHaveBeenCalledWith({
+        select: ['id', 'name', 'username', 'email', 'role', 'isActive', 'createdAt', 'updatedAt'],
+        where: { email: 'john@test.com' },
+      });
     });
   });
 
@@ -104,7 +105,10 @@ describe('UserService', () => {
       const result = await service.findByUsername('john123');
 
       expect(result).toEqual(mockUser);
-      expect(mockRepository.findOne).toHaveBeenCalledWith({ where: { username: 'john123' } });
+      expect(mockRepository.findOne).toHaveBeenCalledWith({
+        select: ['id', 'name', 'username', 'email', 'role', 'isActive', 'createdAt', 'updatedAt'],
+        where: { username: 'john123' },
+      });
     });
   });
 
@@ -116,7 +120,10 @@ describe('UserService', () => {
       const result = await service.findById('1');
 
       expect(result).toEqual(mockUser);
-      expect(mockRepository.findOne).toHaveBeenCalledWith({ where: { id: '1' } });
+      expect(mockRepository.findOne).toHaveBeenCalledWith({
+        select: ['id', 'name', 'username', 'email', 'role', 'isActive', 'createdAt', 'updatedAt'],
+        where: { id: '1' },
+      });
     });
   });
 
@@ -148,16 +155,27 @@ describe('UserService', () => {
         password: 'password123',
         role: ROLE.USER,
       };
-      const mockUser = { id: '1', name: userData.name, username: userData.username, email: userData.email, role: userData.role };
+      const mockEntity = {
+        id: '1',
+        name: userData.name,
+        username: userData.username,
+        email: userData.email,
+        role: userData.role,
+      };
+      const mockSavedUser = {
+        ...mockEntity,
+        password: 'hashed-password',
+        refreshToken: null,
+      };
 
-      mockRepository.create.mockReturnValue(mockUser);
-      mockRepository.save.mockResolvedValue(mockUser);
+      mockRepository.create.mockReturnValue(mockEntity);
+      mockRepository.save.mockResolvedValue(mockSavedUser);
 
       const result = await service.create(userData);
 
-      expect(result).toEqual(mockUser);
+      expect(result).toEqual(mockEntity);
       expect(mockRepository.create).toHaveBeenCalledWith(userData);
-      expect(mockRepository.save).toHaveBeenCalledWith(mockUser);
+      expect(mockRepository.save).toHaveBeenCalledWith(mockEntity);
     });
 
     it('should create user with ADMIN_MASTER role', async () => {
@@ -168,14 +186,25 @@ describe('UserService', () => {
         password: 'admin123',
         role: ROLE.ADMIN_MASTER,
       };
-      const mockUser = { id: '1', name: userData.name, username: userData.username, email: userData.email, role: userData.role };
+      const mockEntity = {
+        id: '1',
+        name: userData.name,
+        username: userData.username,
+        email: userData.email,
+        role: userData.role,
+      };
+      const mockSavedUser = {
+        ...mockEntity,
+        password: 'hashed-password',
+        refreshToken: null,
+      };
 
-      mockRepository.create.mockReturnValue(mockUser);
-      mockRepository.save.mockResolvedValue(mockUser);
+      mockRepository.create.mockReturnValue(mockEntity);
+      mockRepository.save.mockResolvedValue(mockSavedUser);
 
       const result = await service.create(userData);
 
-      expect(result).toEqual(mockUser);
+      expect(result).toEqual(mockEntity);
       expect(mockRepository.create).toHaveBeenCalledWith(userData);
     });
   });
