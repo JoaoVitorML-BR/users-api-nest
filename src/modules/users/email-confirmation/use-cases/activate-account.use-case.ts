@@ -7,11 +7,11 @@ export class ActivateAccountUseCase {
         private readonly emailConfirmationService: EmailConfirmationService,
     ) { }
 
-    async execute(token: string) {
+    async execute(token: string): Promise<void> {
         if (!token) {
             throw new BadRequestException('Token is required to activate the account.');
         }
-        const activateAccount = await this.emailConfirmationService.activateAccount(token);
-        return activateAccount;
+
+        await this.emailConfirmationService.activateAccount(token);
     }
 }
