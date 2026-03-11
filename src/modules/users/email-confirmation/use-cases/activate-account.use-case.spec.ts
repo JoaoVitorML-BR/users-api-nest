@@ -29,10 +29,9 @@ describe('ActivateAccountUseCase', () => {
 
     it('should call emailConfirmationService.activateAccount with the provided token', async () => {
         const token = 'valid-token';
-        const activateAccountResult = { statusCode: 200, status: true, message: 'Account activated successfully' };
-        jest.spyOn(emailConfirmationService, 'activateAccount').mockResolvedValue(activateAccountResult);
+        jest.spyOn(emailConfirmationService, 'activateAccount').mockResolvedValue(undefined);
         const result = await useCase.execute(token);
         expect(emailConfirmationService.activateAccount).toHaveBeenCalledWith(token);
-        expect(result).toBe(activateAccountResult);
+        expect(result).toBeUndefined();
     });
 });
