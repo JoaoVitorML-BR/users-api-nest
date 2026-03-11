@@ -65,13 +65,7 @@ describe('FindAllUsersUseCase', () => {
       const result = await useCase.findAll();
 
       expect(mockUserService.findAll).toHaveBeenCalledTimes(1);
-      expect(result).toEqual({
-        code: 'SUCCESS',
-        statusCode: 200,
-        status: true,
-        message: 'Users retrieved successfully',
-        data: mockUsers,
-      });
+      expect(result).toEqual(mockUsers);
     });
 
     it('should return empty array when no users exist', async () => {
@@ -80,13 +74,7 @@ describe('FindAllUsersUseCase', () => {
       const result = await useCase.findAll();
 
       expect(mockUserService.findAll).toHaveBeenCalledTimes(1);
-      expect(result).toEqual({
-        code: 'SUCCESS',
-        statusCode: 200,
-        status: true,
-        message: 'Users retrieved successfully',
-        data: [],
-      });
+      expect(result).toEqual([]);
     });
 
     it('should throw InternalServerErrorException if findAll returns null', async () => {
