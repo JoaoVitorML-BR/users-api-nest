@@ -6,6 +6,8 @@ import { CreateUsersAdminUseCase } from './use-cases/create-users-admin.use-case
 import { UpdateUserUseCase } from './use-cases/update-user.use-case';
 import { UpdatePasswordUseCase } from './use-cases/update-user-password.use-case';
 import { FindByIdUsersUseCase } from './use-cases/find-by-id-users.use-case';
+import { FindByEmailUsersUseCase } from './use-cases/find-by-email-users.use-case';
+import { FindByUsernameUsersUseCase } from './use-cases/find-by-username-users.use-case';
 import { ROLE } from './user.entity';
 import { AuthorizationGuard } from '../auth/guards/authorization.guard';
 import { UserService } from './user.service';
@@ -18,6 +20,8 @@ describe('UserController', () => {
   let updateUserUseCase: UpdateUserUseCase;
   let updatePasswordUseCase: UpdatePasswordUseCase;
   let findByIdUsersUseCase: FindByIdUsersUseCase;
+  let findByEmailUsersUseCase: FindByEmailUsersUseCase;
+  let findByUsernameUsersUseCase: FindByUsernameUsersUseCase;
 
   const mockFindAllUsersUseCase = {
     findAll: jest.fn(),
@@ -41,6 +45,14 @@ describe('UserController', () => {
 
   const mockFindByIdUsersUseCase = {
     findById: jest.fn(),
+  };
+
+  const mockFindByEmailUsersUseCase = {
+    findByEmail: jest.fn(),
+  };
+
+  const mockFindByUsernameUsersUseCase = {
+    findByUsername: jest.fn(),
   };
 
   const mockUserService = {
@@ -77,6 +89,14 @@ describe('UserController', () => {
           useValue: mockFindByIdUsersUseCase,
         },
         {
+          provide: FindByEmailUsersUseCase,
+          useValue: mockFindByEmailUsersUseCase,
+        },
+        {
+          provide: FindByUsernameUsersUseCase,
+          useValue: mockFindByUsernameUsersUseCase,
+        },
+        {
           provide: UserService,
           useValue: mockUserService,
         },
@@ -96,6 +116,8 @@ describe('UserController', () => {
     updateUserUseCase = module.get<UpdateUserUseCase>(UpdateUserUseCase);
     updatePasswordUseCase = module.get<UpdatePasswordUseCase>(UpdatePasswordUseCase);
     findByIdUsersUseCase = module.get<FindByIdUsersUseCase>(FindByIdUsersUseCase);
+    findByEmailUsersUseCase = module.get<FindByEmailUsersUseCase>(FindByEmailUsersUseCase);
+    findByUsernameUsersUseCase = module.get<FindByUsernameUsersUseCase>(FindByUsernameUsersUseCase);
   });
 
   afterEach(() => {
@@ -322,6 +344,63 @@ describe('UserController', () => {
       const result = await controller.findById('1');
 
       expect(findByIdUsersUseCase.findById).toHaveBeenCalledWith('1');
+      expect(result).toEqual({
+        statusCode: 200,
+        status: true,
+        code: 'SUCCESS',
+        message: 'User retrieved successfully',
+        data: user,
+      });
+    });
+  });
+
+  describe('findByEmail', () => {
+    it('should return user by email with wrapped response', async () => {
+      const request = {
+        user: {
+          id: '1',
+          email: 'john@test.com',
+          role: ROLE.USER,
+        },
+      };
+      const user = {
+        id: '1',
+        name: 'John Doe',
+        username: 'john123',
+        email: 'john@test.com',
+        role: ROLE.USER,
+      };
+
+      mockFindByEmailUsersUseCase.findByEmail.mockResolvedValue(user);
+
+      const result = await controller.findByEmail(request, 'john@test.com');
+
+      expect(findByEmailUsersUseCase.findByEmail).toHaveBeenCalledWith('john@test.com', request.user);
+      expect(result).toEqual({
+        statusCode: 200,
+        status: true,
+        code: 'SUCCESS',
+        message: 'User retrieved successfully',
+        data: user,
+      });
+    });
+  });
+
+  describe('findByUsername', () => {
+    it('should return user by username with wrapped response', async () => {
+      const user = {
+        id: '1',
+        name: 'John Doe',
+        username: 'john123',
+        email: 'john@test.com',
+        role: ROLE.USER,
+      };
+
+      mockFindByUsernameUsersUseCase.findByUsername.mockResolvedValue(user);
+
+      const result = await controller.findByUsername('john123');
+
+      expect(findByUsernameUsersUseCase.findByUsername).toHaveBeenCalledWith('john123');
       expect(result).toEqual({
         statusCode: 200,
         status: true,
