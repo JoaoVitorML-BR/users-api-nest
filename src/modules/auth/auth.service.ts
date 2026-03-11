@@ -1,38 +1,61 @@
-import { Injectable } from "@nestjs/common";
+import {  Injectable } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 import { UserService } from "../users/user.service";
-import { SignInDto } from "./dto/sign-in.dto";
 import { JwtService } from "@nestjs/jwt";
+import { parseExpiresInToSeconds } from "src/common/utils/time.util";
+import { AuthenticatedUser, JwtPayload, TokenResponse } from "./types/auth.types";
 
 @Injectable()
 export class AuthService {
 
     constructor(
         private readonly userService: UserService,
-        private readonly jwtService: JwtService
+        private readonly jwtService: JwtService,
+        private readonly configService: ConfigService,
     ) { }
 
-    async signIn(userLogin: SignInDto) {
-        const res = await this.userService.findByUsernameOrEmail(userLogin.login);
-        return res;
-    }
+    async generateAccessToken(user: Pick<AuthenticatedUser, 'id' | 'username' | 'email' | 'role'>): Promise<TokenResponse> {
+        const accessExpiresIn = parseExpiresInToSeconds(
+            this.configService.get<string>('JWT_ACCESS_TOKEN_EXPIRES_IN', '1h'),
+        );
+        const refreshExpiresIn = parseExpiresInToSeconds(
+            this.configService.get<string>('JWT_REFRESH_TOKEN_EXPIRES_IN', '7d'),
+        );
 
-    async generateAccessToken(user) {
-        // Generate access token logic would go here
-        const payload = { username: user.username, sub: user.id, email: user.email, role: user.role };
+        const accessPayload: JwtPayload = {
+            sub: user.id,
+            username: user.username,
+            email: user.email,
+            role: user.role,
+            tokenType: 'access',
+        };
+
+        const refreshPayload: JwtPayload = {
+            sub: user.id,
+            username: user.username,
+            email: user.email,
+            role: user.role,
+            tokenType: 'refresh',
+        };
+
         return {
-            accessToken: this.jwtService.sign(payload, { expiresIn: '1h' }),
-            refreshToken: this.jwtService.sign(payload, { expiresIn: '7d' }),
-            expiresIn: 3600
-        }
+            accessToken: this.jwtService.sign(accessPayload, { expiresIn: accessExpiresIn }),
+            refreshToken: this.jwtService.sign(refreshPayload, { expiresIn: refreshExpiresIn }),
+            expiresIn: accessExpiresIn,
+        };
     }
 
-    async validateUser(payload: any) {
+    async validateUser(payload: JwtPayload): Promise<AuthenticatedUser | null> {
+        if (payload.tokenType !== 'access') {
+            return null;
+        }
+
         const user = await this.userService.findById(payload.sub);
         if (!user || !user.isActive) {
             return null;
         }
 
         const { password: _, ...userWithoutPassword } = user;
-        return userWithoutPassword;
+        return userWithoutPassword as AuthenticatedUser;
     }
 }

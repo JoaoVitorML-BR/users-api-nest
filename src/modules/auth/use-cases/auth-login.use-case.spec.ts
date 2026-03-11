@@ -19,6 +19,7 @@ describe('AuthSignInUseCase', () => {
         findByUsernameOrEmail: jest.fn(),
         updateRefreshToken: jest.fn(),
         findById: jest.fn(),
+        clearRefreshTokenIfPresent: jest.fn(),
     };
 
     const mockAuthService = {
@@ -82,6 +83,7 @@ describe('AuthSignInUseCase', () => {
 
             mockUserService.findByUsernameOrEmail.mockResolvedValue(mockUser);
             (bcrypt.compare as jest.Mock).mockResolvedValue(true);
+            (bcrypt.hash as jest.Mock).mockResolvedValue('hashed.refresh.token');
             mockAuthService.generateAccessToken.mockResolvedValue(mockTokens);
             mockUserService.updateRefreshToken.mockResolvedValue(undefined);
 
@@ -90,24 +92,19 @@ describe('AuthSignInUseCase', () => {
             expect(mockUserService.findByUsernameOrEmail).toHaveBeenCalledWith('testuser');
             expect(bcrypt.compare).toHaveBeenCalledWith('password123', '$2b$10$hashedPassword');
             expect(mockAuthService.generateAccessToken).toHaveBeenCalled();
-            expect(mockUserService.updateRefreshToken).toHaveBeenCalledWith('123', 'mock.refresh.token');
+            expect(bcrypt.hash).toHaveBeenCalledWith('mock.refresh.token', 10);
+            expect(mockUserService.updateRefreshToken).toHaveBeenCalledWith('123', 'hashed.refresh.token');
             expect(result).toEqual({
-                statusCode: 200,
-                status: true,
-                code: 'SUCCESS',
-                message: 'Login successful',
-                data: {
-                    user: {
-                        id: '123',
-                        name: 'Test User',
-                        username: 'testuser',
-                        email: 'testuser@example.com',
-                        role: 'USER',
-                    },
-                    accessToken: 'mock.access.token',
-                    refreshToken: 'mock.refresh.token',
-                    expiresIn: 3600,
+                user: {
+                    id: '123',
+                    name: 'Test User',
+                    username: 'testuser',
+                    email: 'testuser@example.com',
+                    role: 'USER',
                 },
+                accessToken: 'mock.access.token',
+                refreshToken: 'mock.refresh.token',
+                expiresIn: 3600,
             });
         });
 
@@ -151,6 +148,7 @@ describe('AuthSignInUseCase', () => {
                 username: 'testuser',
                 email: 'testuser@example.com',
                 role: 'USER',
+                tokenType: 'refresh',
             };
             const mockUser = {
                 id: '123',
@@ -170,6 +168,8 @@ describe('AuthSignInUseCase', () => {
 
             mockJwtService.verifyAsync.mockResolvedValue(mockPayload);
             mockUserService.findById.mockResolvedValue(mockUser);
+            (bcrypt.compare as jest.Mock).mockResolvedValue(true);
+            (bcrypt.hash as jest.Mock).mockResolvedValue('hashed.new.refresh.token');
             mockAuthService.generateAccessToken.mockResolvedValue(mockNewTokens);
             mockUserService.updateRefreshToken.mockResolvedValue(undefined);
 
@@ -177,18 +177,14 @@ describe('AuthSignInUseCase', () => {
 
             expect(mockJwtService.verifyAsync).toHaveBeenCalledWith('valid.refresh.token');
             expect(mockUserService.findById).toHaveBeenCalledWith('123');
+            expect(bcrypt.compare).toHaveBeenCalledWith('valid.refresh.token', 'valid.refresh.token');
             expect(mockAuthService.generateAccessToken).toHaveBeenCalled();
-            expect(mockUserService.updateRefreshToken).toHaveBeenCalledWith('123', 'new.refresh.token');
+            expect(bcrypt.hash).toHaveBeenCalledWith('new.refresh.token', 10);
+            expect(mockUserService.updateRefreshToken).toHaveBeenCalledWith('123', 'hashed.new.refresh.token');
             expect(result).toEqual({
-                statusCode: 200,
-                status: true,
-                code: 'SUCCESS',
-                message: 'Token refreshed successfully',
-                data: {
-                    accessToken: 'new.access.token',
-                    refreshToken: 'new.refresh.token',
-                    expiresIn: 3600,
-                },
+                accessToken: 'new.access.token',
+                refreshToken: 'new.refresh.token',
+                expiresIn: 3600,
             });
         });
 
@@ -199,6 +195,17 @@ describe('AuthSignInUseCase', () => {
             await expect(useCase.refreshToken(refreshDto)).rejects.toThrow(UnauthorizedException);
             await expect(useCase.refreshToken(refreshDto)).rejects.toThrow('Invalid or expired refresh token');
             expect(mockJwtService.verifyAsync).toHaveBeenCalledWith('invalid.refresh.token');
+        });
+    });
+
+    describe('logout', () => {
+        it('should clear refresh token on logout', async () => {
+            mockUserService.clearRefreshTokenIfPresent.mockResolvedValue({ affected: 1 });
+
+            const result = await useCase.logout({ id: '123' });
+
+            expect(mockUserService.clearRefreshTokenIfPresent).toHaveBeenCalledWith('123');
+            expect(result).toBeUndefined();
         });
     });
 });

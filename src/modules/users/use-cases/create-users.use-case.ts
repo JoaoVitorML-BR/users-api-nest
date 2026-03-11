@@ -5,13 +5,17 @@ import { CreateUserDTO } from "../dto/create-users.dto";
 import * as bcrypt from 'bcrypt';
 
 import { ROLE } from "../user.entity";
-import { ApiResponseDto } from "../dto/api-response.dto";
+import { SendTokenUseCase } from "../email-confirmation/use-cases/send-token.use-case";
+import { ResponseCreateUsersDto } from "../dto/response-create-users.dto";
 
 @Injectable()
 export class CreateUsersUseCase {
-    constructor(private readonly userService: UserService) { }
+    constructor(
+        private readonly userService: UserService,
+        private readonly sendTokenUseCase: SendTokenUseCase
+    ) { }
 
-    async create(Data: CreateUserDTO): Promise<ApiResponseDto<CreateUserDTO>> {
+    async create(Data: CreateUserDTO): Promise<ResponseCreateUsersDto> {
 
         if (!Data.name || !Data.email || !Data.password || !Data.username) {
             throw new BadRequestException("Name, username, email and password are required");
@@ -28,12 +32,9 @@ export class CreateUsersUseCase {
                 throw new InternalServerErrorException("Failed to create user");
             }
 
-            return {
-                statusCode: 201,
-                status: true,
-                message: "User created successfully",
-                data: user
-            };
+            this.sendTokenUseCase.execute({ email: user.email });
+
+            return user;
         }
 
         const userExists = await this.userService.checkUserExistsByEmailAndUsername(Data.email, Data.username);
@@ -43,16 +44,12 @@ export class CreateUsersUseCase {
         }
 
         const res = await this.userService.create({ ...Data, password: hashedPassword, role: ROLE.USER });
-
         if (!res || !res.id) {
             throw new InternalServerErrorException('Failed to create user');
         }
 
-        return {
-            statusCode: 201,
-            status: true,
-            message: "User created successfully",
-            data: res
-        };
+        this.sendTokenUseCase.execute({ email: res.email });
+
+        return res;
     }
 }
