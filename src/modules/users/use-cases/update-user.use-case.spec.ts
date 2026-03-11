@@ -62,10 +62,7 @@ describe('UpdateUserUseCase', () => {
             (userService.update as jest.Mock).mockResolvedValue(mockUpdatedUser);
             const result = await updateUserUseCase.update(updateData, '1');
 
-            expect(result.statusCode).toBe(200);
-            expect(result.status).toBe(true);
-            expect(result.code).toBe('SUCCESS');
-            expect(result.data).toEqual(mockUpdatedUser);
+            expect(result).toEqual(mockUpdatedUser);
         });
 
         it('should throw error if user not found', async () => {
