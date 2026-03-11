@@ -85,6 +85,6 @@ describe('SendTokenUseCase', () => {
             email: dto.email,
             token: 'generated-token'
         });
-        expect(result).toEqual({ statusCode: 200, status: true, message: 'Token sent successfully!' });
+        expect(result).toBeUndefined();
     });
 });

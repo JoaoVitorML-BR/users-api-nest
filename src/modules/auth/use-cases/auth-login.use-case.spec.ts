@@ -95,22 +95,16 @@ describe('AuthSignInUseCase', () => {
             expect(bcrypt.hash).toHaveBeenCalledWith('mock.refresh.token', 10);
             expect(mockUserService.updateRefreshToken).toHaveBeenCalledWith('123', 'hashed.refresh.token');
             expect(result).toEqual({
-                statusCode: 200,
-                status: true,
-                code: 'SUCCESS',
-                message: 'Login successful',
-                data: {
-                    user: {
-                        id: '123',
-                        name: 'Test User',
-                        username: 'testuser',
-                        email: 'testuser@example.com',
-                        role: 'USER',
-                    },
-                    accessToken: 'mock.access.token',
-                    refreshToken: 'mock.refresh.token',
-                    expiresIn: 3600,
+                user: {
+                    id: '123',
+                    name: 'Test User',
+                    username: 'testuser',
+                    email: 'testuser@example.com',
+                    role: 'USER',
                 },
+                accessToken: 'mock.access.token',
+                refreshToken: 'mock.refresh.token',
+                expiresIn: 3600,
             });
         });
 
@@ -188,15 +182,9 @@ describe('AuthSignInUseCase', () => {
             expect(bcrypt.hash).toHaveBeenCalledWith('new.refresh.token', 10);
             expect(mockUserService.updateRefreshToken).toHaveBeenCalledWith('123', 'hashed.new.refresh.token');
             expect(result).toEqual({
-                statusCode: 200,
-                status: true,
-                code: 'SUCCESS',
-                message: 'Token refreshed successfully',
-                data: {
-                    accessToken: 'new.access.token',
-                    refreshToken: 'new.refresh.token',
-                    expiresIn: 3600,
-                },
+                accessToken: 'new.access.token',
+                refreshToken: 'new.refresh.token',
+                expiresIn: 3600,
             });
         });
 
@@ -217,13 +205,7 @@ describe('AuthSignInUseCase', () => {
             const result = await useCase.logout({ id: '123' });
 
             expect(mockUserService.clearRefreshTokenIfPresent).toHaveBeenCalledWith('123');
-            expect(result).toEqual({
-                statusCode: 200,
-                status: true,
-                code: "SUCCESS",
-                message: "Logout successful",
-                data: null
-            });
+            expect(result).toBeUndefined();
         });
     });
 });

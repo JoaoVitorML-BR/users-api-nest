@@ -148,11 +148,7 @@ describe('EmailConfirmationService', () => {
             emailConfirmed: true,
             isActive: true,
         }));
-        expect(result).toEqual({
-            statusCode: 200,
-            status: true,
-            message: 'Account activated successfully!',
-        });
+        expect(result).toBeUndefined();
     });
 
     it('should return Token not found if email confirmation is not found', async () => {
