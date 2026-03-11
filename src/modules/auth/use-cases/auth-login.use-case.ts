@@ -3,14 +3,12 @@ import { UserService } from "src/modules/users/user.service";
 import { SignInDto } from "../dto/sign-in.dto";
 
 import * as bcrypt from 'bcrypt';
-import { ApiResponseDto } from "src/modules/users/dto/api-response.dto";
 import { ResponseAuthLoginDTO } from "../dto/response-auth-login.dto";
 
 import { AuthService } from "../auth.service";
 import { RefreshTokenDto } from "../dto/refresh-token.dto";
 import { JwtService } from "@nestjs/jwt";
-import { LogoutResponseDTO } from "../dto/logout.dto";
-import { AuthenticatedUser, JwtPayload } from "../types/auth.types";
+import { AuthenticatedUser, JwtPayload, TokenResponse } from "../types/auth.types";
 
 @Injectable()
 export class AuthSignInUseCase {
@@ -22,7 +20,7 @@ export class AuthSignInUseCase {
         private readonly jwtService: JwtService
     ) { }
 
-    async signIn(signInDto: SignInDto): Promise<ApiResponseDto<ResponseAuthLoginDTO>> {
+    async signIn(signInDto: SignInDto): Promise<ResponseAuthLoginDTO> {
         const { login, password } = signInDto;
         this.logger.debug(`Login attempt for user: ${login}`);
 
@@ -56,26 +54,20 @@ export class AuthSignInUseCase {
         this.logger.log(`Login successful for user id ${userWithoutPassword.id}`);
 
         return {
-            statusCode: 200,
-            status: true,
-            code: "SUCCESS",
-            message: "Login successful",
-            data: {
-                user: {
-                    id: userWithoutPassword.id,
-                    name: userWithoutPassword.name,
-                    username: userWithoutPassword.username,
-                    email: userWithoutPassword.email,
-                    role: userWithoutPassword.role
-                },
-                accessToken: tokens.accessToken,
-                refreshToken: tokens.refreshToken,
-                expiresIn: tokens.expiresIn
-            }
+            user: {
+                id: userWithoutPassword.id,
+                name: userWithoutPassword.name,
+                username: userWithoutPassword.username,
+                email: userWithoutPassword.email,
+                role: userWithoutPassword.role
+            },
+            accessToken: tokens.accessToken,
+            refreshToken: tokens.refreshToken,
+            expiresIn: tokens.expiresIn
         };
     }
 
-    async refreshToken(dto: RefreshTokenDto) {
+    async refreshToken(dto: RefreshTokenDto): Promise<TokenResponse> {
         try {
             const payload = await this.jwtService.verifyAsync<JwtPayload>(dto.refreshToken);
 
@@ -111,15 +103,9 @@ export class AuthSignInUseCase {
             this.logger.log(`Refresh token rotated for user id ${user.id}`);
 
             return {
-                statusCode: 200,
-                status: true,
-                code: "SUCCESS",
-                message: "Token refreshed successfully",
-                data: {
-                    accessToken: tokens.accessToken,
-                    refreshToken: tokens.refreshToken,
-                    expiresIn: tokens.expiresIn
-                }
+                accessToken: tokens.accessToken,
+                refreshToken: tokens.refreshToken,
+                expiresIn: tokens.expiresIn
             };
         } catch (error) {
             this.logger.warn('Refresh token flow failed due to invalid/expired token');
@@ -127,7 +113,7 @@ export class AuthSignInUseCase {
         }
     }
 
-    async logout(user: Pick<AuthenticatedUser, 'id'>): Promise<ApiResponseDto<LogoutResponseDTO>> {
+    async logout(user: Pick<AuthenticatedUser, 'id'>): Promise<void> {
         const userId = user?.id;
 
         if (!userId) {
@@ -137,13 +123,5 @@ export class AuthSignInUseCase {
 
         await this.userService.clearRefreshTokenIfPresent(userId);
         this.logger.log(`Logout successful for user id ${userId}`);
-
-        return {
-            statusCode: 200,
-            status: true,
-            code: "SUCCESS",
-            message: "Logout successful",
-            data: null,
-        };
     }
 }
