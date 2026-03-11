@@ -12,6 +12,8 @@ import { EmailConfirmationModule } from './email-confirmation/email-confirmation
 import { UpdateUserUseCase } from './use-cases/update-user.use-case';
 import { UpdatePasswordUseCase } from './use-cases/update-user-password.use-case';
 import { FindByIdUsersUseCase } from './use-cases/find-by-id-users.use-case';
+import { FindByEmailUsersUseCase } from './use-cases/find-by-email-users.use-case';
+import { FindByUsernameUsersUseCase } from './use-cases/find-by-username-users.use-case';
 
 @Module({
     imports: [TypeOrmModule.forFeature([User, EmailConfirmation]), EmailConfirmationModule],
@@ -24,6 +26,8 @@ import { FindByIdUsersUseCase } from './use-cases/find-by-id-users.use-case';
            UpdateUserUseCase,
            UpdatePasswordUseCase,
            FindByIdUsersUseCase,
+            FindByEmailUsersUseCase,
+            FindByUsernameUsersUseCase,
            RolesGuard,
     ],
     exports: [UserService],
