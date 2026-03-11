@@ -29,7 +29,7 @@ export class EmailConfirmationService {
         }
     }
 
-    async activateAccount(token: string) {
+    async activateAccount(token: string): Promise<void> {
         const emailConfirmation = await this.emailConfirmationEntity.findOne({
             where: { token },
             relations: ['user'],
@@ -50,6 +50,5 @@ export class EmailConfirmationService {
         emailConfirmation.user.emailConfirmed = true;
         await this.emailConfirmationEntity.remove(emailConfirmation);
         await this.userRepository.save(emailConfirmation.user);
-        return { statusCode: 200, status: true, message: 'Account activated successfully!' };
     }
 }
