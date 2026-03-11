@@ -11,6 +11,7 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 import { EmailConfirmationModule } from './email-confirmation/email-confirmation.module';
 import { UpdateUserUseCase } from './use-cases/update-user.use-case';
 import { UpdatePasswordUseCase } from './use-cases/update-user-password.use-case';
+import { FindByIdUsersUseCase } from './use-cases/find-by-id-users.use-case';
 
 @Module({
     imports: [TypeOrmModule.forFeature([User, EmailConfirmation]), EmailConfirmationModule],
@@ -22,6 +23,7 @@ import { UpdatePasswordUseCase } from './use-cases/update-user-password.use-case
            CreateUsersAdminUseCase,
            UpdateUserUseCase,
            UpdatePasswordUseCase,
+           FindByIdUsersUseCase,
            RolesGuard,
     ],
     exports: [UserService],
