@@ -59,6 +59,7 @@ describe('PasswordResetService', () => {
     });
 
     afterEach(() => {
+        jest.restoreAllMocks();
         jest.clearAllMocks();
     });
 
@@ -84,8 +85,11 @@ describe('PasswordResetService', () => {
         it('should create and save a reset token', async () => {
             const userId = 'user-id';
             const token = 'reset-token';
-            const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
+            const now = new Date('2026-03-12T15:50:09.726Z').getTime();
+            const expiresAt = new Date(now + 15 * 60 * 1000);
             const resetTokenEntity = { userId, token, expiresAt };
+
+            jest.spyOn(Date, 'now').mockReturnValue(now);
 
             resetTokenRepository.create.mockReturnValue(resetTokenEntity);
             resetTokenRepository.save.mockResolvedValue(resetTokenEntity);
