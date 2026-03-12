@@ -28,22 +28,53 @@ NestJS API for JWT authentication, user management, email confirmation, and pass
 npm install
 ```
 
-2. Configure the required environment variables in `.env`:
+2. Copy the environment example file:
 
+```bash
+cp .env.example .env
+```
+
+On Windows PowerShell, you can use:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+3. Configure the required environment variables in `.env`:
+
+- `DB_HOST`
+- `DB_PORT`
 - `PORT`
+- `NODE_ENV`
 - `JWT_SECRET`
 - `JWT_ACCESS_TOKEN_EXPIRES_IN`
 - `JWT_REFRESH_TOKEN_EXPIRES_IN`
 - `THROTTLE_LIMIT`
 - `THROTTLE_TTL_MS`
+- `EMAIL_CONFIRMATION_EXPIRES_IN_HOURS`
+- `EMAIL_USER`
+- `EMAIL_PASS`
 - `DB_USERNAME`
 - `DB_PASSWORD`
 - `DB_DATABASE`
 - `DB_SYNCHRONIZE`
 
-3. Make sure MySQL and Redis are available locally.
+4. Configure email delivery for Gmail.
 
-4. Start the API:
+This project sends email using Gmail through `EMAIL_USER` and `EMAIL_PASS` in [.env.example](.env.example).
+
+- Set `EMAIL_USER` to your Gmail address.
+- Generate an App Password in your Google account.
+- Copy the generated password exactly as provided by Google into `EMAIL_PASS`.
+- Do not replace it with your regular Gmail password.
+
+Google App Password page:
+
+- `https://myaccount.google.com/apppasswords`
+
+5. Make sure MySQL and Redis are available locally.
+
+6. Start the API:
 
 ```bash
 npm run start:dev
@@ -127,4 +158,4 @@ npm run lint
 ```
 
 Developer: João Vitor
-<a hrfe='https://www.linkedin.com/in/jo%C3%A3o-vitorml-br/'>Linkedin</a>
+LinkedIn: https://www.linkedin.com/in/jo%C3%A3o-vitorml-br/
