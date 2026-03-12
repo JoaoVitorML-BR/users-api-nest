@@ -11,6 +11,7 @@ import { FindByUsernameUsersUseCase } from './use-cases/find-by-username-users.u
 import { ROLE } from './user.entity';
 import { AuthorizationGuard } from '../auth/guards/authorization.guard';
 import { UserService } from './user.service';
+import { PageOptionsDto } from './dto/page-options.dto';
 
 describe('UserController', () => {
   let controller: UserController;
@@ -130,41 +131,75 @@ describe('UserController', () => {
 
   describe('findAll', () => {
     it('should return all users', async () => {
-      const mockUsers = [
-        {
-          id: '1',
-          name: 'John Doe',
-          username: 'john123',
-          email: 'john@test.com',
-          role: ROLE.USER,
+      const pageOptionsDto: PageOptionsDto = {
+        order: undefined,
+        page: 1,
+        take: 10,
+        skip: 0,
+      };
+      const paginatedUsers = {
+        data: [
+          {
+            id: '1',
+            name: 'John Doe',
+            username: 'john123',
+            email: 'john@test.com',
+            role: ROLE.USER,
+          },
+          {
+            id: '2',
+            name: 'Jane Doe',
+            username: 'jane123',
+            email: 'jane@test.com',
+            role: ROLE.ADMIN_MASTER,
+          },
+        ],
+        meta: {
+          page: 1,
+          take: 10,
+          itemCount: 2,
+          pageCount: 1,
+          hasPreviousPage: false,
+          hasNextPage: false,
         },
-        {
-          id: '2',
-          name: 'Jane Doe',
-          username: 'jane123',
-          email: 'jane@test.com',
-          role: ROLE.ADMIN_MASTER,
-        },
-      ];
+      };
 
-      mockFindAllUsersUseCase.findAll.mockResolvedValue(mockUsers);
+      mockFindAllUsersUseCase.findAll.mockResolvedValue(paginatedUsers);
 
-      const result = await controller.findAll();
+      const result = await controller.findAll(pageOptionsDto);
 
       expect(findAllUsersUseCase.findAll).toHaveBeenCalledTimes(1);
+      expect(findAllUsersUseCase.findAll).toHaveBeenCalledWith(pageOptionsDto);
       expect(result).toEqual({
         statusCode: 200,
         status: true,
         code: 'SUCCESS',
         message: 'Users retrieved successfully',
-        data: mockUsers,
+        data: paginatedUsers.data,
+        meta: paginatedUsers.meta,
       });
     });
 
     it('should return empty array when no users exist', async () => {
-      mockFindAllUsersUseCase.findAll.mockResolvedValue([]);
+      const pageOptionsDto: PageOptionsDto = {
+        order: undefined,
+        page: 1,
+        take: 10,
+        skip: 0,
+      };
+      mockFindAllUsersUseCase.findAll.mockResolvedValue({
+        data: [],
+        meta: {
+          page: 1,
+          take: 10,
+          itemCount: 0,
+          pageCount: 0,
+          hasPreviousPage: false,
+          hasNextPage: false,
+        },
+      });
 
-      const result = await controller.findAll();
+      const result = await controller.findAll(pageOptionsDto);
 
       expect(result).toEqual({
         statusCode: 200,
@@ -172,6 +207,14 @@ describe('UserController', () => {
         code: 'SUCCESS',
         message: 'Users retrieved successfully',
         data: [],
+        meta: {
+          page: 1,
+          take: 10,
+          itemCount: 0,
+          pageCount: 0,
+          hasPreviousPage: false,
+          hasNextPage: false,
+        },
       });
       expect(result.data).toHaveLength(0);
     });
@@ -180,7 +223,13 @@ describe('UserController', () => {
       const error = new Error('Database error');
       mockFindAllUsersUseCase.findAll.mockRejectedValue(error);
 
-      await expect(controller.findAll()).rejects.toThrow('Database error');
+      const pageOptionsDto: PageOptionsDto = {
+        order: undefined,
+        page: 1,
+        take: 10,
+        skip: 0,
+      };
+      await expect(controller.findAll(pageOptionsDto)).rejects.toThrow('Database error');
     });
   });
 
