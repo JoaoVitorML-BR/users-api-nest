@@ -1,13 +1,21 @@
 import { Transform } from 'class-transformer';
 import { IsEmail, IsNotEmpty, IsString, IsStrongPassword, Matches, MaxLength, MinLength } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateUserDTO {
+    @ApiProperty({ example: 'Joao Vitor', minLength: 2, maxLength: 100 })
     @IsNotEmpty()
     @IsString({ message: 'Name must be a string' })
     @MinLength(2)
     @MaxLength(100)
     name: string;
 
+    @ApiProperty({
+        example: 'joaovitor',
+        minLength: 5,
+        maxLength: 15,
+        description: 'Accept lowercase letters, numbers and separators . _ -.',
+    })
     @IsNotEmpty()
     @IsString({ message: 'Username must be a string' })
     @MinLength(5)
@@ -18,12 +26,18 @@ export class CreateUserDTO {
     })
     username: string;
 
+    @ApiProperty({ example: 'joao@email.com', maxLength: 255 })
     @IsNotEmpty()
     @Transform(({ value }) => value?.trim().toLowerCase())
     @IsEmail({}, { message: 'Invalid email address' })
     @MaxLength(255)
     email: string;
 
+    @ApiProperty({
+        example: 'Password@123',
+        minLength: 8,
+        description: 'Minimum of 8 characters with uppercase, lowercase, number and symbol.',
+    })
     @IsStrongPassword({
         minLength: 8,
         minLowercase: 1,
