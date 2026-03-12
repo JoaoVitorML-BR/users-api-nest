@@ -131,7 +131,10 @@ describe('EmailConfirmationService', () => {
     it('should activate account successfully', async () => {
         const token = 'valid-token';
         const user = createMockUser('test@example.com');
-        const emailConfirmation = createMockEmailConfirmation(user, { token, expiresAt: new Date() });
+        const emailConfirmation = createMockEmailConfirmation(user, {
+            token,
+            expiresAt: new Date(Date.now() + 60_000),
+        });
 
         emailConfirmationRepository.findOne.mockResolvedValue(emailConfirmation);
         emailConfirmationRepository.remove.mockResolvedValue(emailConfirmation);
