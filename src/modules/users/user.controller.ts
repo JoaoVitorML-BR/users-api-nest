@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, UseGuards, Request } from "@nestjs/common";
+import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards, Request } from "@nestjs/common";
 import { FindAllUsersUseCase } from "./use-cases/find-all-users.use-case";
 import { CreateUserAdminDTO, CreateUserDTO } from "./dto/create-users.dto";
 import { CreateUsersUseCase } from "./use-cases/create-users.use-case";
@@ -15,6 +15,7 @@ import { UpdatePasswordUseCase } from "./use-cases/update-user-password.use-case
 import { FindByIdUsersUseCase } from "./use-cases/find-by-id-users.use-case";
 import { FindByEmailUsersUseCase } from "./use-cases/find-by-email-users.use-case";
 import { FindByUsernameUsersUseCase } from "./use-cases/find-by-username-users.use-case";
+import { PageOptionsDto } from "./dto/page-options.dto";
 
 @Controller('users')
 export class UserController {
@@ -32,15 +33,16 @@ export class UserController {
     @UseGuards(JwtGuard, RolesGuard)
     @Roles(ROLE.ADMIN_MASTER, ROLE.ADMIN)
     @Get()
-    async findAll() {
-        const users = await this.findAllUsersUseCase.findAll();
+    async findAll(@Query() pageOptionsDto: PageOptionsDto) {
+        const page = await this.findAllUsersUseCase.findAll(pageOptionsDto);
 
         return {
             statusCode: 200,
             status: true,
             code: 'SUCCESS',
             message: 'Users retrieved successfully',
-            data: users,
+            data: page.data,
+            meta: page.meta,
         };
     }
 
