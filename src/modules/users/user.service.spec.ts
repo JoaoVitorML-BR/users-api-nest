@@ -2,12 +2,14 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { UserService } from './user.service';
 import { User, ROLE } from './user.entity';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { Order, PageOptionsDto } from './dto/page-options.dto';
 
 describe('UserService', () => {
   let service: UserService;
 
   const mockRepository = {
     find: jest.fn(),
+    findAndCount: jest.fn(),
     findOne: jest.fn(),
     count: jest.fn(),
     create: jest.fn(),
@@ -39,26 +41,46 @@ describe('UserService', () => {
   });
 
   describe('findAll', () => {
-    it('should return an array of users', async () => {
+    it('should return paginated users with count', async () => {
+      const pageOptionsDto: PageOptionsDto = {
+        order: Order.ASC,
+        page: 1,
+        take: 10,
+        skip: 0,
+      };
       const mockUsers = [
         { id: '1', name: 'John', email: 'john@test.com', username: 'john123', role: ROLE.USER },
         { id: '2', name: 'Jane', email: 'jane@test.com', username: 'jane123', role: ROLE.USER },
       ];
-      mockRepository.find.mockResolvedValue(mockUsers);
+      mockRepository.findAndCount.mockResolvedValue([mockUsers, 2]);
 
-      const result = await service.findAll();
+      const result = await service.findAll(pageOptionsDto);
 
-      expect(result).toEqual(mockUsers);
-      expect(mockRepository.find).toHaveBeenCalledTimes(1);
+      expect(result).toEqual([mockUsers, 2]);
+      expect(mockRepository.findAndCount).toHaveBeenCalledTimes(1);
+      expect(mockRepository.findAndCount).toHaveBeenCalledWith({
+        select: ['id', 'name', 'username', 'email', 'role', 'isActive', 'createdAt', 'updatedAt'],
+        order: {
+          createdAt: Order.ASC,
+        },
+        take: 10,
+        skip: 0,
+      });
     });
 
     it('should return empty array when no users exist', async () => {
-      mockRepository.find.mockResolvedValue([]);
+      const pageOptionsDto: PageOptionsDto = {
+        order: Order.ASC,
+        page: 1,
+        take: 10,
+        skip: 0,
+      };
+      mockRepository.findAndCount.mockResolvedValue([[], 0]);
 
-      const result = await service.findAll();
+      const result = await service.findAll(pageOptionsDto);
 
-      expect(result).toEqual([]);
-      expect(mockRepository.find).toHaveBeenCalledTimes(1);
+      expect(result).toEqual([[], 0]);
+      expect(mockRepository.findAndCount).toHaveBeenCalledTimes(1);
     });
   });
 
