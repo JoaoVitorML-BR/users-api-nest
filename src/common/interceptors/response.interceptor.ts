@@ -18,6 +18,7 @@ export class ResponseInterceptor<T> implements NestInterceptor<T, any> {
                 let code = 'SUCCESS';
                 let status = true;
                 let responseData;
+                let responseMeta;
 
                 const codeMap = {
                     [HttpStatus.OK]: 'SUCCESS',
@@ -41,6 +42,9 @@ export class ResponseInterceptor<T> implements NestInterceptor<T, any> {
                     if ('status' in data && typeof data.status === 'boolean') {
                         status = data.status;
                     }
+                    if ('meta' in data) {
+                        responseMeta = data.meta;
+                    }
                     // If the object has data property, use it as the response data
                     if ('data' in data) {
                         responseData = data.data;
@@ -52,13 +56,14 @@ export class ResponseInterceptor<T> implements NestInterceptor<T, any> {
                 } else {
                     responseData = data;
                 }
-                
+
                 return {
                     statusCode,
                     status,
                     code,
                     message,
                     data: responseData,
+                    ...(responseMeta !== undefined ? { meta: responseMeta } : {}),
                 };
             })
         );
