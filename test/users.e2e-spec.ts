@@ -70,8 +70,17 @@ describe('Users Endpoints (e2e)', () => {
         expect(response.body).toHaveProperty('statusCode', 200);
         expect(response.body).toHaveProperty('status', true);
         expect(response.body).toHaveProperty('data');
+        expect(response.body).toHaveProperty('meta');
         expect(Array.isArray(response.body.data)).toBe(true);
         expect(response.body.data.length).toBeGreaterThan(0);
+        expect(response.body.meta).toEqual({
+            page: 1,
+            take: 20,
+            itemCount: expect.any(Number),
+            pageCount: expect.any(Number),
+            hasPreviousPage: false,
+            hasNextPage: expect.any(Boolean),
+        });
     });
 
     it('/users (GET ALL) - should fail without token', async () => {

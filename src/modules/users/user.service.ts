@@ -1,17 +1,23 @@
-import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
+import {  Injectable, NotFoundException } from "@nestjs/common";
 import { User } from "./user.entity";
 import { InjectRepository } from "@nestjs/typeorm";
 import { IsNull, Not, Repository, UpdateResult } from "typeorm";
+import { PageOptionsDto } from "./dto/page-options.dto";
 
 import { ROLE } from "./user.entity";
 
 @Injectable()
 export class UserService {
     constructor(@InjectRepository(User) private readonly userEntity: Repository<User>) { }
-    async findAll() {
+    async findAll(pageOptionsDto: PageOptionsDto) {
         try {
-            return await this.userEntity.find({
-                select: ['id', 'name', 'username', 'email', 'role', 'isActive', 'createdAt', 'updatedAt']
+            return await this.userEntity.findAndCount({
+                select: ['id', 'name', 'username', 'email', 'role', 'isActive', 'createdAt', 'updatedAt'],
+                order: {
+                    createdAt: pageOptionsDto.order,
+                },
+                take: pageOptionsDto.take,
+                skip: pageOptionsDto.skip,
             });
         } catch (error) {
             throw new Error('Failed to fetch users');
