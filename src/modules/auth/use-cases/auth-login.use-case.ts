@@ -9,6 +9,7 @@ import { AuthService } from "../auth.service";
 import { RefreshTokenDto } from "../dto/refresh-token.dto";
 import { JwtService } from "@nestjs/jwt";
 import { AuthenticatedUser, JwtPayload, TokenResponse } from "../types/auth.types";
+import { compareRefreshToken, hashRefreshToken } from "../utils/refresh-token.util";
 
 @Injectable()
 export class AuthSignInUseCase {
@@ -47,7 +48,7 @@ export class AuthSignInUseCase {
 
         const tokens = await this.authService.generateAccessToken(userWithoutPassword);
 
-        const hashedRefreshToken = await bcrypt.hash(tokens.refreshToken, 10);
+        const hashedRefreshToken = hashRefreshToken(tokens.refreshToken);
 
         // Save only the hashed refresh token in the database
         await this.userService.updateRefreshToken(userWithoutPassword.id, hashedRefreshToken);
@@ -76,14 +77,13 @@ export class AuthSignInUseCase {
                 throw new UnauthorizedException('Invalid refresh token');
             }
 
-            const user = await this.userService.findById(payload.sub);
+            const user = await this.userService.findByIdForRefreshValidation(payload.sub);
             if (!user || !user.isActive) {
                 this.logger.warn(`Refresh token rejected: user inactive or not found ${payload.sub}`);
                 throw new UnauthorizedException('User not found or inactive');
             }
 
-            const isValidRefreshToken =
-                !!user.refreshToken && (await bcrypt.compare(dto.refreshToken, user.refreshToken));
+            const isValidRefreshToken = compareRefreshToken(dto.refreshToken, user.refreshToken);
 
             // Valid if the refresh token matches the hash stored in the database
             if (!isValidRefreshToken) {
@@ -91,12 +91,15 @@ export class AuthSignInUseCase {
                 throw new UnauthorizedException('Invalid refresh token');
             }
 
-            const { password: _, ...userWithoutPassword } = user;
-
-            const tokens = await this.authService.generateAccessToken(userWithoutPassword);
+            const tokens = await this.authService.generateAccessToken({
+                id: user.id,
+                username: user.username,
+                email: user.email,
+                role: user.role,
+            });
 
             // Hash refresh token before saving to the database for security
-            const hashedRefreshToken = await bcrypt.hash(tokens.refreshToken, 10);
+            const hashedRefreshToken = hashRefreshToken(tokens.refreshToken);
 
             // Update the refresh token in the database
             await this.userService.updateRefreshToken(user.id, hashedRefreshToken);
