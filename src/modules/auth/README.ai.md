@@ -42,7 +42,7 @@ Provide secure authentication lifecycle operations:
 2. Resolve user by username or email.
 3. Validate password with bcrypt.
 4. Generate access + refresh tokens.
-5. Hash refresh token before persisting.
+5. Hash refresh token before persisting using deterministic hashing.
 6. Return response envelope with user and tokens.
 
 ### 2) `POST /auth/refresh`
@@ -64,18 +64,22 @@ Provide secure authentication lifecycle operations:
 ## Security Rules (Do Not Break)
 
 1. Never persist raw refresh tokens.
-   - Store only bcrypt hash.
+  - Store only deterministic hash.
 
-2. Always rotate refresh tokens.
+2. Keep `bcrypt` restricted to password hashing.
+  - Refresh tokens are high-entropy secrets, not user passwords.
+  - Deterministic hashing simplifies exact-match validation during rotation.
+
+3. Always rotate refresh tokens.
    - New refresh token must replace old hash.
 
-3. Keep strict token type checks.
+4. Keep strict token type checks.
    - Reject non-refresh tokens in refresh endpoint.
 
-4. Keep generic unauthorized errors.
+5. Keep generic unauthorized errors.
    - Avoid leaking sensitive account details.
 
-5. Preserve throttling on login/refresh routes.
+6. Preserve throttling on login/refresh routes.
    - Helps protect against brute force and abuse.
 
 ## Response Contract
