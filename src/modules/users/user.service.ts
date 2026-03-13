@@ -65,6 +65,17 @@ export class UserService {
         }
     }
 
+    async findByIdForRefreshValidation(id: string) {
+        try {
+            return await this.userEntity.findOne({
+                select: ['id', 'name', 'username', 'email', 'role', 'refreshToken', 'isActive'],
+                where: { id }
+            });
+        } catch (error) {
+            throw new Error('Failed to fetch auth user by id');
+        }
+    }
+
     async count() {
         try {
             return await this.userEntity.count();
