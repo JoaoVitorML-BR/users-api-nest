@@ -46,6 +46,8 @@ Copy-Item .env.example .env
 - `DB_PORT`
 - `PORT`
 - `NODE_ENV`
+- `CORS_ORIGINS` (comma-separated list, example: `http://localhost:3000,https://app.example.com`)
+- `CORS_CREDENTIALS` (`true` or `false`)
 - `JWT_SECRET`
 - `JWT_ACCESS_TOKEN_EXPIRES_IN`
 - `JWT_REFRESH_TOKEN_EXPIRES_IN`
@@ -79,6 +81,12 @@ Google App Password page:
 ```bash
 npm run start:dev
 ```
+
+### CORS behavior
+
+- In production, only origins listed in `CORS_ORIGINS` are allowed.
+- In non-production environments, if `CORS_ORIGINS` is empty, CORS is open for local testing.
+- If your frontend sends cookies or auth headers with credentials, set `CORS_CREDENTIALS=true`.
 
 ## Swagger
 
