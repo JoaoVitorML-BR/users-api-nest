@@ -2,11 +2,13 @@ import { Test, TestingModule } from "@nestjs/testing";
 import { EmailConfirmationService } from "../email-confirmation.service";
 import { SendTokenUseCase } from "./send-token.use-case";
 import { TokenGeneratorService } from "src/common/services/token-generator.service";
+import { SendTokenFromEmailService } from "src/common/services/send-email-token.service";
 
 describe('SendTokenUseCase', () => {
     let useCase: SendTokenUseCase;
     let mockTokenGeneratorService: any;
     let mockEmailConfirmationService: any;
+    let mockSendTokenFromEmailService: any;
     let mockEmailQueue: any;
 
     beforeEach(async () => {
@@ -22,6 +24,10 @@ describe('SendTokenUseCase', () => {
             add: jest.fn().mockResolvedValue({ id: 'job-id' }),
         };
 
+        mockSendTokenFromEmailService = {
+            sendToken: jest.fn().mockResolvedValue(true),
+        };
+
         const module: TestingModule = await Test.createTestingModule({
             providers: [
                 {
@@ -35,6 +41,10 @@ describe('SendTokenUseCase', () => {
                 {
                     provide: 'BullQueue_email',
                     useValue: mockEmailQueue,
+                },
+                {
+                    provide: SendTokenFromEmailService,
+                    useValue: mockSendTokenFromEmailService,
                 },
                 SendTokenUseCase,
             ],
@@ -63,11 +73,28 @@ describe('SendTokenUseCase', () => {
         await expect(useCase.execute({ email: "test@example.com" })).rejects.toThrow('Failed to save token.');
     });
 
-    it('should throw BadRequestException if adding to queue fails', async () => {
+    it('should fallback to direct email when queue fails', async () => {
         mockTokenGeneratorService.generate.mockReturnValue('generated-token');
         mockEmailConfirmationService.saveToken.mockResolvedValue({ id: 'token-id' });
-        mockEmailQueue.add.mockResolvedValue(null); // Simula falha
+        mockEmailQueue.add.mockRejectedValue(new Error('queue down'));
+        mockSendTokenFromEmailService.sendToken.mockResolvedValue(true);
+        const dto = { email: "test@example.com" };
         
+        await expect(useCase.execute(dto)).resolves.toBeUndefined();
+
+        expect(mockSendTokenFromEmailService.sendToken).toHaveBeenCalledWith(
+            dto.email,
+            'generated-token',
+            'email-confirmation'
+        );
+    });
+
+    it('should throw BadRequestException if queue fails and fallback also fails', async () => {
+        mockTokenGeneratorService.generate.mockReturnValue('generated-token');
+        mockEmailConfirmationService.saveToken.mockResolvedValue({ id: 'token-id' });
+        mockEmailQueue.add.mockRejectedValue(new Error('queue down'));
+        mockSendTokenFromEmailService.sendToken.mockResolvedValue(false);
+
         await expect(useCase.execute({ email: "test@example.com" })).rejects.toThrow('Failed to send email with the token.');
     });
 
@@ -84,6 +111,11 @@ describe('SendTokenUseCase', () => {
         expect(mockEmailQueue.add).toHaveBeenCalledWith({
             email: dto.email,
             token: 'generated-token'
+        }, {
+            attempts: 3,
+            backoff: { type: 'exponential', delay: 2000 },
+            removeOnComplete: true,
+            removeOnFail: false,
         });
         expect(result).toBeUndefined();
     });
