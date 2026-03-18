@@ -22,7 +22,24 @@ export class EmailConfirmationService {
 
             const expiresInHours = this.configService.get<number>('EMAIL_CONFIRMATION_EXPIRES_IN_HOURS', 24);
             const expiresAt = new Date(Date.now() + expiresInHours * 60 * 60 * 1000);
-            const emailConfirmation = this.emailConfirmationEntity.create({ token, user, expiresAt });
+
+            const existingToken = await this.emailConfirmationEntity.findOne({
+                where: { userId: user.id },
+            });
+
+            if (existingToken) {
+                existingToken.token = token;
+                existingToken.expiresAt = expiresAt;
+                return await this.emailConfirmationEntity.save(existingToken);
+            }
+
+            const emailConfirmation = this.emailConfirmationEntity.create({
+                token,
+                user,
+                userId: user.id,
+                expiresAt,
+            });
+
             return await this.emailConfirmationEntity.save(emailConfirmation);
         } catch (error) {
             throw new Error(`Failed to save token: ${error.message}`);
