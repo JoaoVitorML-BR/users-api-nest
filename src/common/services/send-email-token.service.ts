@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import nodemailer from 'nodemailer';
+import { Logger } from '@nestjs/common';
 
 type EmailType = 'email-confirmation' | 'password-reset';
 
@@ -29,8 +30,12 @@ const templates: Record<EmailType, (token: string, userName?: string) => { subje
 };
 
 export class SendTokenFromEmailService {
+    private readonly logger = new Logger(SendTokenFromEmailService.name);
+
     async sendToken(email: string, token: string, type: EmailType = 'email-confirmation', userName?: string) {
         try {
+            this.logger.log(`Sending ${type} email to ${email}`);
+
             const transporter = nodemailer.createTransport({
                 service: 'gmail',
                 auth: {
@@ -50,11 +55,15 @@ export class SendTokenFromEmailService {
             });
 
             if (!info || !info.accepted || !Array.isArray(info.accepted) || info.accepted.length === 0) {
+                this.logger.error(`Email provider did not accept recipient ${email}`);
                 return false;
             }
 
+            this.logger.log(`Email sent successfully to ${email}`);
+
             return true;
         } catch (error) {
+            this.logger.error(`Failed to send email to ${email}: ${error?.message || 'unknown error'}`, error?.stack);
             return false;
         }
     }
