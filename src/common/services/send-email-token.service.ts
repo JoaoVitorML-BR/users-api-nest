@@ -31,6 +31,7 @@ const templates: Record<EmailType, (token: string, userName?: string) => { subje
 
 export class SendTokenFromEmailService {
     private readonly logger = new Logger(SendTokenFromEmailService.name);
+    private readonly sendTimeoutMs = 12000;
 
     async sendToken(email: string, token: string, type: EmailType = 'email-confirmation', userName?: string) {
         try {
@@ -38,6 +39,10 @@ export class SendTokenFromEmailService {
 
             const transporter = nodemailer.createTransport({
                 service: 'gmail',
+                // Fail fast in production instead of hanging request for ~30s+
+                connectionTimeout: 5000,
+                greetingTimeout: 5000,
+                socketTimeout: 10000,
                 auth: {
                     user: process.env.EMAIL_USER,
                     pass: process.env.EMAIL_PASS,
@@ -46,13 +51,19 @@ export class SendTokenFromEmailService {
 
             const { subject, html } = templates[type](token, userName);
 
-            const info = await transporter.sendMail({
+            const sendMailPromise = transporter.sendMail({
                 from: process.env.EMAIL_USER,
                 to: email,
                 subject,
                 text: `Seu código: ${token}`,
                 html,
             });
+
+            const timeoutPromise = new Promise<never>((_, reject) => {
+                setTimeout(() => reject(new Error(`SMTP send timeout after ${this.sendTimeoutMs}ms`)), this.sendTimeoutMs);
+            });
+
+            const info = await Promise.race([sendMailPromise, timeoutPromise]);
 
             if (!info || !info.accepted || !Array.isArray(info.accepted) || info.accepted.length === 0) {
                 this.logger.error(`Email provider did not accept recipient ${email}`);

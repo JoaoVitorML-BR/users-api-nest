@@ -1,6 +1,6 @@
 import 'dotenv/config';
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module'; 
+import { AppModule } from './app.module';
 import { ValidationPipe, VersioningType } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
@@ -17,12 +17,31 @@ async function bootstrap() {
     .split(',')
     .map((origin) => origin.trim())
     .filter((origin) => origin.length > 0);
+  const defaultProductionOrigins = (process.env.CORS_ORIGINS_PRODUCTION ?? '')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter((origin) => origin.length > 0);
+  const allowedOrigins = Array.from(new Set([...corsOrigins, ...defaultProductionOrigins]));
 
   const isProduction = process.env.NODE_ENV === 'production';
   const corsCredentials = process.env.CORS_CREDENTIALS === 'true';
 
   app.enableCors({
-    origin: corsOrigins.length > 0 ? corsOrigins : !isProduction,
+    origin: (origin, callback) => {
+      if (!origin) {
+        return callback(null, true);
+      }
+
+      if (!isProduction) {
+        return callback(null, true);
+      }
+
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(new Error(`Origin ${origin} not allowed by CORS`), false);
+    },
     credentials: corsCredentials,
     methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
