@@ -7,7 +7,6 @@ import { PageOptionsDto } from '../dto/page-options.dto';
 
 describe('FindAllUsersUseCase', () => {
   let useCase: FindAllUsersUseCase;
-  let userService: UserService;
 
   const mockUserService = {
     findAll: jest.fn(),
@@ -25,7 +24,6 @@ describe('FindAllUsersUseCase', () => {
     }).compile();
 
     useCase = module.get<FindAllUsersUseCase>(FindAllUsersUseCase);
-    userService = module.get<UserService>(UserService);
   });
 
   afterEach(() => {

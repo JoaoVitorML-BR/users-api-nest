@@ -69,10 +69,10 @@ Use cases should return business values only.
 
 ## Current Routes and Returns
 
-| Endpoint | Success Status | Success `data` behavior | Common error status |
-|---|---|---|---|
-| `PATCH /email-confirmation/activate-account` | `200` | `data: null` | `400` |
-| `POST /email-confirmation/send-email` | `200` | `data: null` | `400` |
+| Endpoint                                     | Success Status | Success `data` behavior | Common error status |
+| -------------------------------------------- | -------------- | ----------------------- | ------------------- |
+| `PATCH /email-confirmation/activate-account` | `200`          | `data: null`            | `400`               |
+| `POST /email-confirmation/send-email`        | `200`          | `data: null`            | `400`               |
 
 ## Testing Guide
 
