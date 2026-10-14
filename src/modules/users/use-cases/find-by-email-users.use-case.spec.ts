@@ -1,5 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  NotFoundException,
+} from '@nestjs/common';
 import { ROLE } from '../user.entity';
 import { UserService } from '../user.service';
 import { FindByEmailUsersUseCase } from './find-by-email-users.use-case';
@@ -41,7 +45,9 @@ describe('FindByEmailUsersUseCase', () => {
     };
 
     it('should throw BadRequestException when email is missing', async () => {
-      await expect(useCase.findByEmail('', normalUser)).rejects.toThrow(BadRequestException);
+      await expect(useCase.findByEmail('', normalUser)).rejects.toThrow(
+        BadRequestException,
+      );
     });
 
     it('should allow normal user to find only own email', async () => {
@@ -61,7 +67,9 @@ describe('FindByEmailUsersUseCase', () => {
     });
 
     it('should reject normal user trying to access another email', async () => {
-      await expect(useCase.findByEmail('other@test.com', normalUser)).rejects.toThrow(ForbiddenException);
+      await expect(
+        useCase.findByEmail('other@test.com', normalUser),
+      ).rejects.toThrow(ForbiddenException);
       expect(mockUserService.findByEmail).not.toHaveBeenCalled();
     });
 
@@ -95,7 +103,9 @@ describe('FindByEmailUsersUseCase', () => {
 
       mockUserService.findByEmail.mockResolvedValue(null);
 
-      await expect(useCase.findByEmail('missing@test.com', adminMaster)).rejects.toThrow(NotFoundException);
+      await expect(
+        useCase.findByEmail('missing@test.com', adminMaster),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 });
