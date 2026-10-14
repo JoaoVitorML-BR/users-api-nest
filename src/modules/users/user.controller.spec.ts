@@ -113,12 +113,21 @@ describe('UserController', () => {
     controller = module.get<UserController>(UserController);
     findAllUsersUseCase = module.get<FindAllUsersUseCase>(FindAllUsersUseCase);
     createUsersUseCase = module.get<CreateUsersUseCase>(CreateUsersUseCase);
-    createUsersAdminUseCase = module.get<CreateUsersAdminUseCase>(CreateUsersAdminUseCase);
+    createUsersAdminUseCase = module.get<CreateUsersAdminUseCase>(
+      CreateUsersAdminUseCase,
+    );
     updateUserUseCase = module.get<UpdateUserUseCase>(UpdateUserUseCase);
-    updatePasswordUseCase = module.get<UpdatePasswordUseCase>(UpdatePasswordUseCase);
-    findByIdUsersUseCase = module.get<FindByIdUsersUseCase>(FindByIdUsersUseCase);
-    findByEmailUsersUseCase = module.get<FindByEmailUsersUseCase>(FindByEmailUsersUseCase);
-    findByUsernameUsersUseCase = module.get<FindByUsernameUsersUseCase>(FindByUsernameUsersUseCase);
+    updatePasswordUseCase = module.get<UpdatePasswordUseCase>(
+      UpdatePasswordUseCase,
+    );
+    findByIdUsersUseCase =
+      module.get<FindByIdUsersUseCase>(FindByIdUsersUseCase);
+    findByEmailUsersUseCase = module.get<FindByEmailUsersUseCase>(
+      FindByEmailUsersUseCase,
+    );
+    findByUsernameUsersUseCase = module.get<FindByUsernameUsersUseCase>(
+      FindByUsernameUsersUseCase,
+    );
   });
 
   afterEach(() => {
@@ -229,7 +238,9 @@ describe('UserController', () => {
         take: 10,
         skip: 0,
       };
-      await expect(controller.findAll(pageOptionsDto)).rejects.toThrow('Database error');
+      await expect(controller.findAll(pageOptionsDto)).rejects.toThrow(
+        'Database error',
+      );
     });
   });
 
@@ -283,16 +294,20 @@ describe('UserController', () => {
     });
 
     it('should propagate BadRequestException from use case', async () => {
-      const error = new Error('Name, username, email and password are required');
-      mockCreateUsersUseCase.create.mockRejectedValue(error);
-
-      await expect(controller.create({ name: '', username: '', email: '', password: '' })).rejects.toThrow(
+      const error = new Error(
         'Name, username, email and password are required',
       );
+      mockCreateUsersUseCase.create.mockRejectedValue(error);
+
+      await expect(
+        controller.create({ name: '', username: '', email: '', password: '' }),
+      ).rejects.toThrow('Name, username, email and password are required');
     });
 
     it('should propagate ConflictException from use case', async () => {
-      const error = new Error('User with the same email or username already exists');
+      const error = new Error(
+        'User with the same email or username already exists',
+      );
       mockCreateUsersUseCase.create.mockRejectedValue(error);
 
       await expect(controller.create(validUserData)).rejects.toThrow(
@@ -317,11 +332,15 @@ describe('UserController', () => {
         email: validAdminData.email,
         role: ROLE.ADMIN,
       };
-      mockCreateUsersAdminUseCase.createAdmin.mockResolvedValue(mockCreatedAdmin);
+      mockCreateUsersAdminUseCase.createAdmin.mockResolvedValue(
+        mockCreatedAdmin,
+      );
 
       const result = await controller.createAdmin(validAdminData);
 
-      expect(createUsersAdminUseCase.createAdmin).toHaveBeenCalledWith(validAdminData);
+      expect(createUsersAdminUseCase.createAdmin).toHaveBeenCalledWith(
+        validAdminData,
+      );
       expect(result).toEqual({
         statusCode: 201,
         status: true,
@@ -368,7 +387,11 @@ describe('UserController', () => {
 
       const result = await controller.updatePassword(request, payload, '1');
 
-      expect(updatePasswordUseCase.updatePassword).toHaveBeenCalledWith(payload, '1', '1');
+      expect(updatePasswordUseCase.updatePassword).toHaveBeenCalledWith(
+        payload,
+        '1',
+        '1',
+      );
       expect(result).toEqual({
         statusCode: 200,
         status: true,
@@ -424,7 +447,10 @@ describe('UserController', () => {
 
       const result = await controller.findByEmail(request, 'john@test.com');
 
-      expect(findByEmailUsersUseCase.findByEmail).toHaveBeenCalledWith('john@test.com', request.user);
+      expect(findByEmailUsersUseCase.findByEmail).toHaveBeenCalledWith(
+        'john@test.com',
+        request.user,
+      );
       expect(result).toEqual({
         statusCode: 200,
         status: true,
@@ -449,7 +475,9 @@ describe('UserController', () => {
 
       const result = await controller.findByUsername('john123');
 
-      expect(findByUsernameUsersUseCase.findByUsername).toHaveBeenCalledWith('john123');
+      expect(findByUsernameUsersUseCase.findByUsername).toHaveBeenCalledWith(
+        'john123',
+      );
       expect(result).toEqual({
         statusCode: 200,
         status: true,

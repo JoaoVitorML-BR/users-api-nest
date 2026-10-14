@@ -16,20 +16,23 @@ import { FindByEmailUsersUseCase } from './use-cases/find-by-email-users.use-cas
 import { FindByUsernameUsersUseCase } from './use-cases/find-by-username-users.use-case';
 
 @Module({
-    imports: [TypeOrmModule.forFeature([User, EmailConfirmation]), EmailConfirmationModule],
-    controllers: [UserController],
-    providers: [
-           UserService, 
-           FindAllUsersUseCase,
-           CreateUsersUseCase,
-           CreateUsersAdminUseCase,
-           UpdateUserUseCase,
-           UpdatePasswordUseCase,
-           FindByIdUsersUseCase,
-            FindByEmailUsersUseCase,
-            FindByUsernameUsersUseCase,
-           RolesGuard,
-    ],
-    exports: [UserService],
+  imports: [
+    TypeOrmModule.forFeature([User, EmailConfirmation]),
+    EmailConfirmationModule,
+  ],
+  controllers: [UserController],
+  providers: [
+    UserService,
+    FindAllUsersUseCase,
+    CreateUsersUseCase,
+    CreateUsersAdminUseCase,
+    UpdateUserUseCase,
+    UpdatePasswordUseCase,
+    FindByIdUsersUseCase,
+    FindByEmailUsersUseCase,
+    FindByUsernameUsersUseCase,
+    RolesGuard,
+  ],
+  exports: [UserService],
 })
-export class UsersModule { }
+export class UsersModule {}

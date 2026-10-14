@@ -120,8 +120,12 @@ describe('FindAllUsersUseCase', () => {
       };
       mockUserService.findAll.mockResolvedValue([null, 0]);
 
-      await expect(useCase.findAll(pageOptionsDto)).rejects.toThrow(InternalServerErrorException);
-      await expect(useCase.findAll(pageOptionsDto)).rejects.toThrow('Failed to retrieve users');
+      await expect(useCase.findAll(pageOptionsDto)).rejects.toThrow(
+        InternalServerErrorException,
+      );
+      await expect(useCase.findAll(pageOptionsDto)).rejects.toThrow(
+        'Failed to retrieve users',
+      );
     });
 
     it('should throw InternalServerErrorException if findAll returns undefined', async () => {
@@ -133,7 +137,9 @@ describe('FindAllUsersUseCase', () => {
       };
       mockUserService.findAll.mockResolvedValue([undefined, 0]);
 
-      await expect(useCase.findAll(pageOptionsDto)).rejects.toThrow(InternalServerErrorException);
+      await expect(useCase.findAll(pageOptionsDto)).rejects.toThrow(
+        InternalServerErrorException,
+      );
     });
 
     it('should handle service errors', async () => {
@@ -145,7 +151,9 @@ describe('FindAllUsersUseCase', () => {
       };
       mockUserService.findAll.mockRejectedValue(new Error('Database error'));
 
-      await expect(useCase.findAll(pageOptionsDto)).rejects.toThrow('Database error');
+      await expect(useCase.findAll(pageOptionsDto)).rejects.toThrow(
+        'Database error',
+      );
     });
   });
 });

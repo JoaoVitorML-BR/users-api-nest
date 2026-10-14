@@ -1,6 +1,6 @@
 export class LogoutResponseDTO {
-    statusCode: number;
-    status: boolean;
-    code: string;
-    message: string;
+  statusCode: number;
+  status: boolean;
+  code: string;
+  message: string;
 }

@@ -15,7 +15,8 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 
 const isTestEnvironment = process.env.NODE_ENV === 'test';
 const shouldSynchronizeSchema =
-  process.env.NODE_ENV === 'development' && process.env.DB_SYNCHRONIZE === 'true';
+  process.env.NODE_ENV === 'development' &&
+  process.env.DB_SYNCHRONIZE === 'true';
 
 @Module({
   imports: [
@@ -43,23 +44,23 @@ const shouldSynchronizeSchema =
     TypeOrmModule.forRoot(
       isTestEnvironment
         ? {
-          type: 'sqlite',
-          database: ':memory:',
-          entities: [User, EmailConfirmation, ResetPasswordToken],
-          synchronize: true,
-          logging: false,
-        }
+            type: 'sqlite',
+            database: ':memory:',
+            entities: [User, EmailConfirmation, ResetPasswordToken],
+            synchronize: true,
+            logging: false,
+          }
         : {
-          type: 'mysql',
-          host: 'localhost',
-          port: 3306,
-          username: process.env.DB_USERNAME,
-          password: process.env.DB_PASSWORD,
-          database: process.env.DB_DATABASE,
-          entities: [User, EmailConfirmation, ResetPasswordToken],
-          synchronize: shouldSynchronizeSchema,
-          logging: true,
-        },
+            type: 'mysql',
+            host: 'localhost',
+            port: 3306,
+            username: process.env.DB_USERNAME,
+            password: process.env.DB_PASSWORD,
+            database: process.env.DB_DATABASE,
+            entities: [User, EmailConfirmation, ResetPasswordToken],
+            synchronize: shouldSynchronizeSchema,
+            logging: true,
+          },
     ),
     UsersModule,
     AuthModule,
@@ -80,4 +81,4 @@ const shouldSynchronizeSchema =
     },
   ],
 })
-export class AppModule { }
+export class AppModule {}

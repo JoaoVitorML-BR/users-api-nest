@@ -21,7 +21,9 @@ describe('FindByUsernameUsersUseCase', () => {
       ],
     }).compile();
 
-    useCase = module.get<FindByUsernameUsersUseCase>(FindByUsernameUsersUseCase);
+    useCase = module.get<FindByUsernameUsersUseCase>(
+      FindByUsernameUsersUseCase,
+    );
   });
 
   afterEach(() => {
@@ -34,7 +36,9 @@ describe('FindByUsernameUsersUseCase', () => {
 
   describe('findByUsername', () => {
     it('should throw BadRequestException when username is missing', async () => {
-      await expect(useCase.findByUsername('')).rejects.toThrow(BadRequestException);
+      await expect(useCase.findByUsername('')).rejects.toThrow(
+        BadRequestException,
+      );
     });
 
     it('should return user by username', async () => {
@@ -56,7 +60,9 @@ describe('FindByUsernameUsersUseCase', () => {
     it('should throw NotFoundException when username does not exist', async () => {
       mockUserService.findByUsername.mockResolvedValue(null);
 
-      await expect(useCase.findByUsername('missinguser')).rejects.toThrow(NotFoundException);
+      await expect(useCase.findByUsername('missinguser')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 });

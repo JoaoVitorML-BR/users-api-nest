@@ -6,7 +6,10 @@ export const hashRefreshToken = (refreshToken: string): string => {
   return createHash(REFRESH_TOKEN_ALGORITHM).update(refreshToken).digest('hex');
 };
 
-export const compareRefreshToken = (refreshToken: string, storedHash: string | null): boolean => {
+export const compareRefreshToken = (
+  refreshToken: string,
+  storedHash: string | null,
+): boolean => {
   if (!storedHash) {
     return false;
   }

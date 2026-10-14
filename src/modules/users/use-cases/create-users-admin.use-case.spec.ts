@@ -1,5 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { BadRequestException, ConflictException, InternalServerErrorException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { CreateUsersAdminUseCase } from './create-users-admin.use-case';
 import { UserService } from '../user.service';
 import { ROLE } from '../user.entity';
@@ -53,14 +57,21 @@ describe('CreateUsersAdminUseCase', () => {
 
     it('should throw BadRequestException when required fields are missing', async () => {
       await expect(
-        useCase.createAdmin({ name: '', username: '', email: '', password: '' }),
+        useCase.createAdmin({
+          name: '',
+          username: '',
+          email: '',
+          password: '',
+        }),
       ).rejects.toThrow(BadRequestException);
     });
 
     it('should throw ConflictException when user already exists', async () => {
       mockUserService.checkUserExistsByEmailAndUsername.mockResolvedValue(true);
 
-      await expect(useCase.createAdmin(validAdminData)).rejects.toThrow(ConflictException);
+      await expect(useCase.createAdmin(validAdminData)).rejects.toThrow(
+        ConflictException,
+      );
       expect(mockUserService.create).not.toHaveBeenCalled();
     });
 
@@ -73,7 +84,9 @@ describe('CreateUsersAdminUseCase', () => {
         role: ROLE.ADMIN,
       };
 
-      mockUserService.checkUserExistsByEmailAndUsername.mockResolvedValue(false);
+      mockUserService.checkUserExistsByEmailAndUsername.mockResolvedValue(
+        false,
+      );
       mockUserService.create.mockResolvedValue(createdUser);
 
       const result = await useCase.createAdmin(validAdminData);
@@ -85,15 +98,21 @@ describe('CreateUsersAdminUseCase', () => {
         password: expect.any(String),
         role: ROLE.ADMIN,
       });
-      expect(mockSendTokenUseCase.execute).toHaveBeenCalledWith({ email: createdUser.email });
+      expect(mockSendTokenUseCase.execute).toHaveBeenCalledWith({
+        email: createdUser.email,
+      });
       expect(result).toEqual(createdUser);
     });
 
     it('should throw InternalServerErrorException if create fails', async () => {
-      mockUserService.checkUserExistsByEmailAndUsername.mockResolvedValue(false);
+      mockUserService.checkUserExistsByEmailAndUsername.mockResolvedValue(
+        false,
+      );
       mockUserService.create.mockResolvedValue(null);
 
-      await expect(useCase.createAdmin(validAdminData)).rejects.toThrow(InternalServerErrorException);
+      await expect(useCase.createAdmin(validAdminData)).rejects.toThrow(
+        InternalServerErrorException,
+      );
     });
   });
 });

@@ -1,0 +1,240 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  schedule:
+    # Auditoria semanal de dependências (segunda-feira, 08:00 UTC)
+    - cron: '0 8 * * 1'
+
+# Cancela execuções antigas da mesma branch/PR
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# Princípio do menor privilégio para o GITHUB_TOKEN
+permissions:
+  contents: read
+
+env:
+  NODE_VERSION: '22'
+
+jobs:
+  # ---------------------------------------------------------------
+  # Padronização: ESLint + Prettier + checagem de tipos
+  # (usa eslint direto, pois o script "lint" do projeto tem --fix)
+  # ---------------------------------------------------------------
+  lint:
+    name: Lint, Format & Typecheck
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: yarn
+
+      - name: Instalar dependências (lockfile congelado)
+        run: yarn install --frozen-lockfile
+
+      - name: ESLint (sem auto-fix)
+        run: yarn eslint "{src,apps,libs,test}/**/*.ts" --max-warnings=0
+
+      - name: Prettier (verificação)
+        run: yarn prettier --check "src/**/*.ts" "test/**/*.ts"
+
+      - name: TypeScript (sem emitir arquivos)
+        run: yarn tsc --noEmit -p tsconfig.json
+
+  # ---------------------------------------------------------------
+  # Testes unitários + cobertura
+  # ---------------------------------------------------------------
+  test-unit:
+    name: Testes unitários
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: yarn
+
+      - run: yarn install --frozen-lockfile
+
+      - name: Jest com cobertura
+        run: yarn test:cov --ci
+        env:
+          NODE_ENV: test
+          JWT_SECRET: test-secret-apenas-para-ci
+          JWT_EXPIRES_IN: 15m
+
+      - name: Publicar relatório de cobertura
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage/
+          retention-days: 7
+
+  # ---------------------------------------------------------------
+  # Testes e2e com MySQL e Redis reais (TypeORM + Bull)
+  # Se seus e2e usam sqlite/mocks, remova os services abaixo.
+  # Ajuste os nomes das variáveis para o que seu ConfigModule lê.
+  # ---------------------------------------------------------------
+  test-e2e:
+    name: Testes e2e
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: auth_test
+          MYSQL_USER: test
+          MYSQL_PASSWORD: test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd "mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      NODE_ENV: test
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_USERNAME: test
+      DB_PASSWORD: test
+      DB_NAME: auth_test
+      REDIS_HOST: 127.0.0.1
+      REDIS_PORT: 6379
+      JWT_SECRET: test-secret-apenas-para-ci
+      JWT_EXPIRES_IN: 15m
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: yarn
+
+      - run: yarn install --frozen-lockfile
+
+      - name: Rodar testes e2e
+        run: yarn test:e2e --ci
+
+  # ---------------------------------------------------------------
+  # Segurança: auditoria de dependências de produção
+  # ---------------------------------------------------------------
+  audit:
+    name: yarn audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Auditar dependências de produção (falha em high/critical)
+        run: yarn audit --groups dependencies --level high
+
+  # ---------------------------------------------------------------
+  # Segurança: análise estática de código (SAST)
+  # ---------------------------------------------------------------
+  codeql:
+    name: CodeQL
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: github/codeql-action/init@v3
+        with:
+          languages: javascript-typescript
+          queries: security-extended
+
+      - uses: github/codeql-action/analyze@v3
+        with:
+          category: /language:javascript-typescript
+
+  # ---------------------------------------------------------------
+  # Segurança: vazamento de segredos no histórico do git
+  # ---------------------------------------------------------------
+  secrets-scan:
+    name: Gitleaks
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ---------------------------------------------------------------
+  # Revisão de dependências novas em PRs (vulnerabilidades)
+  # ---------------------------------------------------------------
+  dependency-review:
+    name: Dependency Review
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: high
+
+  # ---------------------------------------------------------------
+  # Build de produção (só roda se lint e testes passarem)
+  # ---------------------------------------------------------------
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [lint, test-unit, test-e2e]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: yarn
+
+      - run: yarn install --frozen-lockfile
+
+      - name: Build NestJS
+        run: yarn build
+
+      - name: Guardar artefato do build
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          retention-days: 7

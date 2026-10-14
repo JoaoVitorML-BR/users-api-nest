@@ -21,7 +21,9 @@ async function bootstrap() {
     .split(',')
     .map((origin) => origin.trim())
     .filter((origin) => origin.length > 0);
-  const allowedOrigins = Array.from(new Set([...corsOrigins, ...defaultProductionOrigins]));
+  const allowedOrigins = Array.from(
+    new Set([...corsOrigins, ...defaultProductionOrigins]),
+  );
 
   const isProduction = process.env.NODE_ENV === 'production';
   const corsCredentials = process.env.CORS_CREDENTIALS === 'true';
@@ -47,15 +49,19 @@ async function bootstrap() {
     allowedHeaders: ['Content-Type', 'Authorization'],
   });
 
-  app.useGlobalPipes(new ValidationPipe({
-    whitelist: true,
-    forbidNonWhitelisted: true,
-    transform: true,
-  }));
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+    }),
+  );
 
   const swaggerConfig = new DocumentBuilder()
     .setTitle('API Login')
-    .setDescription('Authentication API documentation, users, and auxiliary flows.')
+    .setDescription(
+      'Authentication API documentation, users, and auxiliary flows.',
+    )
     .setVersion('1.0.0')
     .addBearerAuth(
       {

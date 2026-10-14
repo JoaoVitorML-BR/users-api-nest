@@ -1,0 +1,18 @@
+# Development Rules - Login API (NestJS)
+
+## ⚠️ Mandatory Package Manager
+- Use **Yarn** EXCLUSIVELY (`yarn add`, `yarn add -D`, `yarn build`, `yarn test`, `yarn start:dev`).
+- NEVER run commands using `npm` (`npm install`, `npm run`, or unnecessary `npx` usage). Any use of npm will cause inconsistencies in `yarn.lock`.
+
+## 📐 Code Standards & Best Practices (NestJS)
+- **Strict TypeScript**: Explicit typing for method return values ​​and public parameters.
+- **Modular Structure**:
+  - `modules/<feature>/` containing `.controller.ts`, `.service.ts`, `.module.ts`, `.entity.ts`, and a `dto/` folder.
+  - DTOs strictly validated using `class-validator` and documented with `@nestjs/swagger` decorators (`@ApiProperty`).
+- **Formatting & Linting**:
+  - Code must be 100% compliant with ESLint and Prettier.
+  - Do not leave unused variables or imports.
+  - Follow the kebab-case convention for filenames (e.g., `complete-profile.dto.ts`, `google-auth.service.ts`).
+- **Security**:
+  - Secrets (Google Client ID, JWT Secret, database credentials) MUST come from environment variables via `ConfigService`.
+  - Do not expose sensitive data in logs or public payloads.
