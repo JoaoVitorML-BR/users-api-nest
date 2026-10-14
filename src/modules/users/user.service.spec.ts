@@ -49,8 +49,20 @@ describe('UserService', () => {
         skip: 0,
       };
       const mockUsers = [
-        { id: '1', name: 'John', email: 'john@test.com', username: 'john123', role: ROLE.USER },
-        { id: '2', name: 'Jane', email: 'jane@test.com', username: 'jane123', role: ROLE.USER },
+        {
+          id: '1',
+          name: 'John',
+          email: 'john@test.com',
+          username: 'john123',
+          role: ROLE.USER,
+        },
+        {
+          id: '2',
+          name: 'Jane',
+          email: 'jane@test.com',
+          username: 'jane123',
+          role: ROLE.USER,
+        },
       ];
       mockRepository.findAndCount.mockResolvedValue([mockUsers, 2]);
 
@@ -59,7 +71,16 @@ describe('UserService', () => {
       expect(result).toEqual([mockUsers, 2]);
       expect(mockRepository.findAndCount).toHaveBeenCalledTimes(1);
       expect(mockRepository.findAndCount).toHaveBeenCalledWith({
-        select: ['id', 'name', 'username', 'email', 'role', 'isActive', 'createdAt', 'updatedAt'],
+        select: [
+          'id',
+          'name',
+          'username',
+          'email',
+          'role',
+          'isActive',
+          'createdAt',
+          'updatedAt',
+        ],
         order: {
           createdAt: Order.ASC,
         },
@@ -86,13 +107,20 @@ describe('UserService', () => {
 
   describe('findOne', () => {
     it('should return a user by id', async () => {
-      const mockUser = { id: '1', name: 'John', email: 'john@test.com', username: 'john123' };
+      const mockUser = {
+        id: '1',
+        name: 'John',
+        email: 'john@test.com',
+        username: 'john123',
+      };
       mockRepository.findOne.mockResolvedValue(mockUser);
 
       const result = await service.findOne('1');
 
       expect(result).toEqual(mockUser);
-      expect(mockRepository.findOne).toHaveBeenCalledWith({ where: { id: '1' } });
+      expect(mockRepository.findOne).toHaveBeenCalledWith({
+        where: { id: '1' },
+      });
     });
 
     it('should return null when user not found', async () => {
@@ -113,7 +141,16 @@ describe('UserService', () => {
 
       expect(result).toEqual(mockUser);
       expect(mockRepository.findOne).toHaveBeenCalledWith({
-        select: ['id', 'name', 'username', 'email', 'role', 'isActive', 'createdAt', 'updatedAt'],
+        select: [
+          'id',
+          'name',
+          'username',
+          'email',
+          'role',
+          'isActive',
+          'createdAt',
+          'updatedAt',
+        ],
         where: { email: 'john@test.com' },
       });
     });
@@ -128,7 +165,16 @@ describe('UserService', () => {
 
       expect(result).toEqual(mockUser);
       expect(mockRepository.findOne).toHaveBeenCalledWith({
-        select: ['id', 'name', 'username', 'email', 'role', 'isActive', 'createdAt', 'updatedAt'],
+        select: [
+          'id',
+          'name',
+          'username',
+          'email',
+          'role',
+          'isActive',
+          'createdAt',
+          'updatedAt',
+        ],
         where: { username: 'john123' },
       });
     });
@@ -143,7 +189,16 @@ describe('UserService', () => {
 
       expect(result).toEqual(mockUser);
       expect(mockRepository.findOne).toHaveBeenCalledWith({
-        select: ['id', 'name', 'username', 'email', 'role', 'isActive', 'createdAt', 'updatedAt'],
+        select: [
+          'id',
+          'name',
+          'username',
+          'email',
+          'role',
+          'isActive',
+          'createdAt',
+          'updatedAt',
+        ],
         where: { id: '1' },
       });
     });
@@ -238,7 +293,10 @@ describe('UserService', () => {
         .mockResolvedValueOnce(mockUser) // first call for email
         .mockResolvedValueOnce(null); // second call for username
 
-      const result = await service.checkUserExistsByEmailAndUsername('john@test.com', 'john123');
+      const result = await service.checkUserExistsByEmailAndUsername(
+        'john@test.com',
+        'john123',
+      );
 
       expect(result).toBe(true);
       expect(mockRepository.findOne).toHaveBeenCalledTimes(2);
@@ -250,7 +308,10 @@ describe('UserService', () => {
         .mockResolvedValueOnce(null) // first call for email
         .mockResolvedValueOnce(mockUser); // second call for username
 
-      const result = await service.checkUserExistsByEmailAndUsername('john@test.com', 'john123');
+      const result = await service.checkUserExistsByEmailAndUsername(
+        'john@test.com',
+        'john123',
+      );
 
       expect(result).toBe(true);
     });
@@ -260,7 +321,10 @@ describe('UserService', () => {
         .mockResolvedValueOnce(null)
         .mockResolvedValueOnce(null);
 
-      const result = await service.checkUserExistsByEmailAndUsername('john@test.com', 'john123');
+      const result = await service.checkUserExistsByEmailAndUsername(
+        'john@test.com',
+        'john123',
+      );
 
       expect(result).toBe(false);
     });
@@ -274,7 +338,7 @@ describe('UserService', () => {
 
       expect(mockRepository.update).toHaveBeenCalledWith(
         expect.objectContaining({ id: '123' }),
-        { refreshToken: null }
+        { refreshToken: null },
       );
       expect(result).toEqual({ affected: 1 });
     });
@@ -283,20 +347,35 @@ describe('UserService', () => {
   describe('update', () => {
     it('should update user successfully', async () => {
       const mockUpdateResult = { affected: 1 };
-      const mockUpdatedUser = { id: '1', name: 'John Updated', username: 'johnupdated', role: ROLE.USER, isActive: true, updatedAt: new Date() };
+      const mockUpdatedUser = {
+        id: '1',
+        name: 'John Updated',
+        username: 'johnupdated',
+        role: ROLE.USER,
+        isActive: true,
+        updatedAt: new Date(),
+      };
       mockRepository.update.mockResolvedValue(mockUpdateResult);
       mockRepository.findOne.mockResolvedValue(mockUpdatedUser);
-      const result = await service.update('1', { name: 'John Updated', username: 'johnupdated' });
+      const result = await service.update('1', {
+        name: 'John Updated',
+        username: 'johnupdated',
+      });
 
       expect(result).toEqual(mockUpdatedUser);
-      expect(mockRepository.update).toHaveBeenCalledWith('1', { name: 'John Updated', username: 'johnupdated' });
+      expect(mockRepository.update).toHaveBeenCalledWith('1', {
+        name: 'John Updated',
+        username: 'johnupdated',
+      });
     });
 
     it('should throw error if user not found', async () => {
       mockRepository.update.mockResolvedValue({ affected: 0 });
       mockRepository.findOne.mockResolvedValue(null);
 
-      await expect(service.update('1', { name: 'John Updated', username: 'johnupdated' })).rejects.toThrow('User not found');
+      await expect(
+        service.update('1', { name: 'John Updated', username: 'johnupdated' }),
+      ).rejects.toThrow('User not found');
     });
   });
 
@@ -306,12 +385,120 @@ describe('UserService', () => {
       mockRepository.update.mockResolvedValue(mockUpdateResult);
       const result = await service.updatePassword('1', 'newhashedpassword');
       expect(result).toBe(true);
-      expect(mockRepository.update).toHaveBeenCalledWith('1', { password: 'newhashedpassword' });
+      expect(mockRepository.update).toHaveBeenCalledWith('1', {
+        password: 'newhashedpassword',
+      });
     });
 
     it('should throw error if user not found', async () => {
       mockRepository.update.mockResolvedValue({ affected: 0 });
-      await expect(service.updatePassword('1', 'newhashedpassword')).rejects.toThrow('User not found');
+      await expect(
+        service.updatePassword('1', 'newhashedpassword'),
+      ).rejects.toThrow('User not found');
+    });
+  });
+
+  describe('findByIdWithPassword', () => {
+    it('should return user with password field included', async () => {
+      const mockUser = {
+        id: '1',
+        name: 'John',
+        username: 'john123',
+        email: 'john@test.com',
+        role: ROLE.USER,
+        password: '$2b$10$hashedpassword',
+        isActive: true,
+      };
+      mockRepository.findOne.mockResolvedValue(mockUser);
+
+      const result = await service.findByIdWithPassword('1');
+
+      expect(result).toEqual(mockUser);
+      expect(mockRepository.findOne).toHaveBeenCalledWith({
+        select: [
+          'id',
+          'name',
+          'username',
+          'email',
+          'role',
+          'password',
+          'isActive',
+        ],
+        where: { id: '1' },
+      });
+    });
+  });
+
+  describe('findByIdWithTwoFactorSecret', () => {
+    it('should return user with decrypted twoFactorSecret', async () => {
+      const mockUser = {
+        id: '1',
+        name: 'John',
+        username: 'john123',
+        email: 'john@test.com',
+        role: ROLE.USER,
+        isActive: true,
+        isTwoFactorEnabled: true,
+        twoFactorSecret: 'PLAIN_SECRET_FOR_TEST',
+        password: '$2b$10$hashedpassword',
+      };
+      mockRepository.findOne.mockResolvedValue({ ...mockUser });
+
+      const result = await service.findByIdWithTwoFactorSecret('1');
+
+      expect(result).toBeDefined();
+      expect(result?.twoFactorSecret).toBe('PLAIN_SECRET_FOR_TEST');
+      expect(mockRepository.findOne).toHaveBeenCalledWith({
+        where: { id: '1' },
+        select: [
+          'id',
+          'name',
+          'username',
+          'email',
+          'role',
+          'isActive',
+          'isTwoFactorEnabled',
+          'twoFactorSecret',
+          'password',
+        ],
+      });
+    });
+  });
+
+  describe('setTwoFactor', () => {
+    it('should encrypt secret and update two factor settings', async () => {
+      mockRepository.update.mockResolvedValue({ affected: 1 });
+
+      const result = await service.setTwoFactor('1', true, 'JBSWY3DPEHPK3PXP');
+
+      expect(result).toBe(true);
+      expect(mockRepository.update).toHaveBeenCalledWith(
+        '1',
+        expect.objectContaining({
+          isTwoFactorEnabled: true,
+          twoFactorSecret: expect.any(String),
+        }),
+      );
+    });
+
+    it('should set null when secret is null', async () => {
+      mockRepository.update.mockResolvedValue({ affected: 1 });
+
+      const result = await service.setTwoFactor('1', false, null);
+
+      expect(result).toBe(true);
+      expect(mockRepository.update).toHaveBeenCalledWith('1', {
+        isTwoFactorEnabled: false,
+        twoFactorSecret: null,
+      });
+    });
+
+    it('should throw NotFoundException if user does not exist', async () => {
+      mockRepository.update.mockResolvedValue({ affected: 0 });
+
+      await expect(service.setTwoFactor('999', false, null)).rejects.toThrow(
+        'User not found',
+      );
     });
   });
 });
