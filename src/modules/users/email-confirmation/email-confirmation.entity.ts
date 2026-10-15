@@ -25,7 +25,7 @@ export class EmailConfirmation {
   @Column({ type: 'varchar', length: 255 })
   token: string;
 
-  @Column({ type: 'timestamp' })
+  @Column({ type: 'datetime' })
   expiresAt: Date;
 
   @CreateDateColumn()
