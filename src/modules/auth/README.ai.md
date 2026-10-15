@@ -64,11 +64,13 @@ Provide secure authentication lifecycle operations:
 ## Security Rules (Do Not Break)
 
 1. Never persist raw refresh tokens.
-  - Store only deterministic hash.
+
+- Store only deterministic hash.
 
 2. Keep `bcrypt` restricted to password hashing.
-  - Refresh tokens are high-entropy secrets, not user passwords.
-  - Deterministic hashing simplifies exact-match validation during rotation.
+
+- Refresh tokens are high-entropy secrets, not user passwords.
+- Deterministic hashing simplifies exact-match validation during rotation.
 
 3. Always rotate refresh tokens.
    - New refresh token must replace old hash.
@@ -96,11 +98,11 @@ Use case layer should return business data only (not HTTP envelopes).
 
 ## Current Routes and Returns
 
-| Endpoint | Success Status | Success `data` behavior | Common error status |
-|---|---|---|---|
-| `POST /auth/login` | `200` | User + access/refresh tokens | `401` |
-| `POST /auth/refresh` | `200` | New access/refresh tokens | `401` |
-| `POST /auth/logout` | `200` | `data: null` | `401` |
+| Endpoint             | Success Status | Success `data` behavior      | Common error status |
+| -------------------- | -------------- | ---------------------------- | ------------------- |
+| `POST /auth/login`   | `200`          | User + access/refresh tokens | `401`               |
+| `POST /auth/refresh` | `200`          | New access/refresh tokens    | `401`               |
+| `POST /auth/logout`  | `200`          | `data: null`                 | `401`               |
 
 ## Testing Guide
 

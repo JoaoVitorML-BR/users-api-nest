@@ -1,8 +1,16 @@
 import 'dotenv/config';
 import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication, ValidationPipe } from '@nestjs/common';
+import { getQueueToken } from '@nestjs/bull';
+import {
+  INestApplication,
+  ValidationPipe,
+  VersioningType,
+} from '@nestjs/common';
 import request from 'supertest';
+import { DataSource } from 'typeorm';
+import { User } from '../src/modules/users/user.entity';
 import { AppModule } from '../src/app.module';
+import { SendTokenFromEmailService } from '../src/common/services/send-email-token.service';
 
 describe('Users Endpoints (e2e)', () => {
   let app: INestApplication;
@@ -11,9 +19,25 @@ describe('Users Endpoints (e2e)', () => {
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
-    }).compile();
+    })
+      .overrideProvider(getQueueToken('email'))
+      .useValue({
+        add: jest.fn().mockResolvedValue({}),
+        process: jest.fn(),
+      })
+      .overrideProvider(SendTokenFromEmailService)
+      .useValue({ sendToken: jest.fn().mockResolvedValue(true) })
+      .compile();
     app = moduleFixture.createNestApplication();
-    app.useGlobalPipes(new ValidationPipe());
+    app.setGlobalPrefix('nest-api');
+    app.enableVersioning({ type: VersioningType.URI, defaultVersion: '1' });
+    app.useGlobalPipes(
+      new ValidationPipe({
+        whitelist: true,
+        forbidNonWhitelisted: true,
+        transform: true,
+      }),
+    );
     await app.init();
 
     const adminUser = {
@@ -23,17 +47,25 @@ describe('Users Endpoints (e2e)', () => {
       password: 'Admin@123',
     };
     await request(app.getHttpServer())
-      .post('/users')
+      .post('/nest-api/v1/users')
       .send(adminUser)
       .expect(201);
 
+    await app
+      .get(DataSource)
+      .getRepository(User)
+      .update(
+        { email: adminUser.email },
+        { isActive: true, emailConfirmed: true },
+      );
+
     // Fazer login e obter token
     const loginResponse = await request(app.getHttpServer())
-      .post('/auth/login')
+      .post('/nest-api/v1/auth/login')
       .send({ login: 'admin', password: 'Admin@123' })
       .expect(200);
 
-    adminToken = loginResponse.body.data.access_token;
+    adminToken = loginResponse.body.data.accessToken;
   }, 30000);
 
   afterAll(async () => {
@@ -43,13 +75,13 @@ describe('Users Endpoints (e2e)', () => {
   it('/users (POST) - should create new user', async () => {
     const timestamp = Date.now();
     const createUserDto = {
-      username: `testuser${timestamp}`,
+      username: `user${timestamp.toString().slice(-10)}`,
       name: 'Test User',
       email: `teste${timestamp}@gmail.com`,
       password: 'Teste@123',
     };
     const response = await request(app.getHttpServer())
-      .post('/users')
+      .post('/nest-api/v1/users')
       .send(createUserDto)
       .expect(201);
     expect(response.body).toHaveProperty('statusCode', 201);
@@ -64,7 +96,7 @@ describe('Users Endpoints (e2e)', () => {
 
   it('/users (GET ALL) - should return all users with valid admin token', async () => {
     const response = await request(app.getHttpServer())
-      .get('/users')
+      .get('/nest-api/v1/users')
       .set('Authorization', `Bearer ${adminToken}`)
       .expect(200);
     expect(response.body).toHaveProperty('statusCode', 200);
@@ -84,6 +116,6 @@ describe('Users Endpoints (e2e)', () => {
   });
 
   it('/users (GET ALL) - should fail without token', async () => {
-    await request(app.getHttpServer()).get('/users').expect(401);
+    await request(app.getHttpServer()).get('/nest-api/v1/users').expect(401);
   });
 });

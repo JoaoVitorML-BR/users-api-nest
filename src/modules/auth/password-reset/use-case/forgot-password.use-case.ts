@@ -32,7 +32,7 @@ export class PasswordForgotUseCase {
 
     await this.passwordResetService.removeOldTokens(userByEmailExists.id);
 
-    const tokenGenerated = await this.tokenGeneratorResetPassword.generate();
+    const tokenGenerated = this.tokenGeneratorResetPassword.generate();
     await this.passwordResetService.saveResetToken(
       userByEmailExists.id,
       tokenGenerated,

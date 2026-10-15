@@ -17,8 +17,8 @@ Provide a secure password recovery flow with two API steps:
 
 - `password-reset.controller.ts`
   - HTTP routes:
-	 - `POST /auth/password/forgot`
-	 - `POST /auth/password/reset`
+    - `POST /auth/password/forgot`
+    - `POST /auth/password/reset`
   - Returns API-standard response wrapper.
 
 - `password-reset.entity.ts`
@@ -46,10 +46,10 @@ Provide a secure password recovery flow with two API steps:
 5. Generate secure token.
 6. Save token with short expiration.
 7. Enqueue email job in Bull queue (`email`) with:
-	- `email`
-	- `token`
-	- `userName`
-	- `type: 'password-reset'`
+   - `email`
+   - `token`
+   - `userName`
+   - `type: 'password-reset'`
 
 ### 2) Reset Password (`POST /auth/password/reset`)
 
@@ -64,21 +64,21 @@ Provide a secure password recovery flow with two API steps:
 ## Security Rules (Do Not Break)
 
 1. Token must be cryptographically secure.
-	- Current pattern: `crypto.randomBytes(...)`
-	- Do not revert to `Math.random()`.
+   - Current pattern: `crypto.randomBytes(...)`
+   - Do not revert to `Math.random()`.
 
 2. Token must expire quickly.
-	- Current env key: `PASSWORD_RESET_EXPIRES_IN_MINUTES`
-	- Current default fallback: 15 minutes.
+   - Current env key: `PASSWORD_RESET_EXPIRES_IN_MINUTES`
+   - Current default fallback: 15 minutes.
 
 3. Token is single-use.
-	- Always delete token after successful reset.
+   - Always delete token after successful reset.
 
 4. Session invalidation is mandatory.
-	- Keep refresh token cleanup after password reset.
+   - Keep refresh token cleanup after password reset.
 
 5. Forgot endpoint should not reveal account existence.
-	- Keep generic response pattern for unknown/inactive emails.
+   - Keep generic response pattern for unknown/inactive emails.
 
 ## Email Pattern
 
@@ -132,6 +132,6 @@ Guidelines:
 2. Store only hashed reset tokens in DB (instead of plaintext token).
 3. Add audit logs/events for password reset lifecycle.
 4. Add dedicated tests for:
-	- expired token rejection
-	- token reuse rejection
-	- refresh token invalidation
+   - expired token rejection
+   - token reuse rejection
+   - refresh token invalidation

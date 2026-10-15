@@ -38,27 +38,27 @@ Provide user lifecycle operations with clear role-based access rules:
 ## Clean Architecture Rules (Do Not Break)
 
 1. One use case per file.
-	- Keep each business action isolated in its own class/file.
-	- Current examples:
-	  - `create-users.use-case.ts`
-	  - `create-users-admin.use-case.ts`
-	  - `find-all-users.use-case.ts`
-	  - `find-by-id-users.use-case.ts`
-	  - `update-user.use-case.ts`
-	  - `update-user-password.use-case.ts`
+   - Keep each business action isolated in its own class/file.
+   - Current examples:
+     - `create-users.use-case.ts`
+     - `create-users-admin.use-case.ts`
+     - `find-all-users.use-case.ts`
+     - `find-by-id-users.use-case.ts`
+     - `update-user.use-case.ts`
+     - `update-user-password.use-case.ts`
 
 2. Keep controller thin.
-	- Controller should call use cases and not implement business rules.
-	- Controller is responsible for the HTTP response envelope.
+   - Controller should call use cases and not implement business rules.
+   - Controller is responsible for the HTTP response envelope.
 
 3. Keep persistence in service layer.
-	- TypeORM queries should stay in `user.service.ts`.
+   - TypeORM queries should stay in `user.service.ts`.
 
 4. Keep DTO validation declarative.
-	- Input constraints should remain in DTO decorators.
+   - Input constraints should remain in DTO decorators.
 
 5. Keep side-effects explicit.
-	- User creation triggers email confirmation token send use case.
+   - User creation triggers email confirmation token send use case.
 
 ## End-to-End Logic by Endpoint
 
@@ -127,24 +127,24 @@ Provide user lifecycle operations with clear role-based access rules:
 ## Security and Authorization Rules
 
 1. Never store plaintext passwords.
-	- Always hash with bcrypt before persistence.
+   - Always hash with bcrypt before persistence.
 
 2. Keep self-password-change restriction.
-	- A user can only change their own password.
+   - A user can only change their own password.
 
 3. Preserve role restrictions on admin/list routes.
-	- `create-admin` must stay `ADMIN_MASTER` only.
-	- `GET /users` must stay `ADMIN_MASTER` or `ADMIN` only.
+   - `create-admin` must stay `ADMIN_MASTER` only.
+   - `GET /users` must stay `ADMIN_MASTER` or `ADMIN` only.
 
 4. Keep duplicate user prevention.
-	- Must validate email and username uniqueness before create.
+   - Must validate email and username uniqueness before create.
 
 5. Keep safe field projection.
-	- List/find operations should avoid returning sensitive fields like password.
+   - List/find operations should avoid returning sensitive fields like password.
 
 6. Keep email privacy by role.
-	- Email lookup must not expose arbitrary users to regular users.
-	- Only admins can query any email.
+   - Email lookup must not expose arbitrary users to regular users.
+   - Only admins can query any email.
 
 ## Response Contract
 
@@ -164,31 +164,31 @@ Module follows the global API envelope:
 
 ### Current Practical Returns
 
-| Endpoint | Success Status | Success `data` behavior | Common error status |
-|---|---|---|---|
-| `POST /users` | `201` | Created user in `data` | `400`, `409`, `500` |
-| `POST /users/create-admin` | `201` | Created admin user in `data` | `400`, `409`, `500`, `403` |
-| `GET /users` | `200` | Array of users in `data` | `401`, `403`, `500` |
-| `GET /users/:id` | `200` | User object | `400`, `401`, `403`, `404` |
-| `PATCH /users/:id` | `200` | Updated user in `data` | `400`, `401`, `403`, `404` |
-| `PATCH /users/password/:id` | `200` | `data: null` | `400`, `401`, `403`, `404` |
-| `GET /users/email/:email` | `200` | User object | `400`, `401`, `403`, `404` |
-| `GET /users/username/:username` | `200` | User object | `400`, `404` |
+| Endpoint                        | Success Status | Success `data` behavior      | Common error status        |
+| ------------------------------- | -------------- | ---------------------------- | -------------------------- |
+| `POST /users`                   | `201`          | Created user in `data`       | `400`, `409`, `500`        |
+| `POST /users/create-admin`      | `201`          | Created admin user in `data` | `400`, `409`, `500`, `403` |
+| `GET /users`                    | `200`          | Array of users in `data`     | `401`, `403`, `500`        |
+| `GET /users/:id`                | `200`          | User object                  | `400`, `401`, `403`, `404` |
+| `PATCH /users/:id`              | `200`          | Updated user in `data`       | `400`, `401`, `403`, `404` |
+| `PATCH /users/password/:id`     | `200`          | `data: null`                 | `400`, `401`, `403`, `404` |
+| `GET /users/email/:email`       | `200`          | User object                  | `400`, `401`, `403`, `404` |
+| `GET /users/username/:username` | `200`          | User object                  | `400`, `404`               |
 
 ## DTO and Validation Notes
 
 1. `CreateUserDTO`
-	- Username normalized to lowercase.
-	- Email normalized to lowercase.
-	- Strong password policy enforced.
+   - Username normalized to lowercase.
+   - Email normalized to lowercase.
+   - Strong password policy enforced.
 
 2. `UpdateUserDTO`
-	- Supports `name` and `username` updates.
-	- Use case also enforces at least one field at runtime.
+   - Supports `name` and `username` updates.
+   - Use case also enforces at least one field at runtime.
 
 3. `UpdatePasswordUserDTO`
-	- Requires current/new/confirm passwords.
-	- Strong password policy enforced on new and confirm values.
+   - Requires current/new/confirm passwords.
+   - Strong password policy enforced on new and confirm values.
 
 ## Testing Guide (Important for AI Context)
 

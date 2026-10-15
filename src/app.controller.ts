@@ -22,13 +22,13 @@ export class AppController {
       },
     },
   })
-  async checkHealth(): Promise<string> {
+  checkHealth(): string {
     try {
       if (!this.dataSource.isInitialized) {
         return 'API is not connected to database';
       }
       return 'API is healthy';
-    } catch (error) {
+    } catch {
       return 'API health check failed';
     }
   }

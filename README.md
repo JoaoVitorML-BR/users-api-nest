@@ -110,12 +110,12 @@ All endpoints follow the same envelope:
 
 ```json
 {
-	"statusCode": 200,
-	"status": true,
-	"code": "SUCCESS",
-	"message": "Request successful",
-	"data": {},
-	"meta": {}
+  "statusCode": 200,
+  "status": true,
+  "code": "SUCCESS",
+  "message": "Request successful",
+  "data": {},
+  "meta": {}
 }
 ```
 

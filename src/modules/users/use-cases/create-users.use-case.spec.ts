@@ -11,8 +11,6 @@ import { SendTokenUseCase } from '../email-confirmation/use-cases/send-token.use
 
 describe('CreateUsersUseCase', () => {
   let useCase: CreateUsersUseCase;
-  let userService: UserService;
-  let sendTokenUseCase: SendTokenUseCase;
 
   const mockUserService = {
     count: jest.fn(),
@@ -36,7 +34,6 @@ describe('CreateUsersUseCase', () => {
     }).compile();
 
     useCase = module.get<CreateUsersUseCase>(CreateUsersUseCase);
-    userService = module.get<UserService>(UserService);
   });
 
   afterEach(() => {
